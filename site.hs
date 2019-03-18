@@ -5,8 +5,12 @@ import           Hakyll
 
 
 --------------------------------------------------------------------------------
+
+deployConfig = defaultConfiguration {deployCommand =  "git stash && git checkout develop && stack exec website clean && stack exec website build && git fetch --all && git checkout -b master --track origin/master && cp -a _site/. . && git add -A && git commit -m \"Publish.\" && git push origin master:master && git checkout develop && git branch -D master && git stash pop" }
+
+
 main :: IO ()
-main = hakyll $ do
+main = hakyllWith deployConfig $ do
     match "images/*" $ do
         route   idRoute
         compile copyFileCompiler
@@ -65,4 +69,3 @@ postCtx :: Context String
 postCtx =
     dateField "date" "%B %e, %Y" `mappend`
     defaultContext
-
