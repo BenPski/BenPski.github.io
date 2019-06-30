@@ -2,3 +2,5 @@ _cache/
 _site/
 .stack-work/
 .idea/
+deployCommand
+stale_outputs_checked
