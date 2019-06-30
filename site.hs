@@ -40,6 +40,7 @@ main = hakyllWith deployConfig $ do
             >>= loadAndApplyTemplate "templates/default.html" defaultContext
             >>= relativizeUrls
 
+
     create ["notes.html"] $ do
         route idRoute
         compile $ do
@@ -48,6 +49,7 @@ main = hakyllWith deployConfig $ do
                     listField "notes" defaultContext (return notes) `mappend`
                     constField "title" "Notes" `mappend`
                     defaultContext
+
             makeItem ""
                 >>= loadAndApplyTemplate "templates/notes-main.html" notesCtx
                 >>= loadAndApplyTemplate "templates/default.html" notesCtx
