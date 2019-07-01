@@ -71,7 +71,7 @@ main = hakyllWith deployConfig $ do
                 >>= relativizeUrls
 
 
-    match "index.html" $ do
+    create ["index.html"] $ do
         route idRoute
         compile $ do
             posts <- recentFirst =<< loadAll "posts/*"
