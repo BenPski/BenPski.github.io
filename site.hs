@@ -4,12 +4,11 @@ import           Data.Monoid (mappend)
 import           Hakyll
 import qualified Data.Set as S
 import           Text.Pandoc.Options
-import           Control.Monad (liftM)
+import           Control.Monad (liftM, foldM)
 import           Data.Ord (comparing)
 import           Data.List (sortBy, sort)
 import           Data.Char (toUpper)
 import           System.FilePath
-import Debug.Trace
 
 
 --------------------------------------------------------------------------------
@@ -46,32 +45,16 @@ main = hakyllWith deployConfig $ do
             >>= loadAndApplyTemplate "templates/default.html" defaultContext
             >>= relativizeUrls
 
---    create ["notes.html"] $ do
---        route idRoute
---        compile $ do
---            cats <- buildCategories "notes/**" fromFilePath
---            let catsMap = tagsMap cats
---            let ctxs = fmap ((\(cat, items) -> constField "name" (capitalize cat) `mappend`
---                                               listField "values" defaultContext (traverse load items) `mappend`
---                                               defaultContext)) catsMap
---
---            let notesCtx = constField "title" "Notes" `mappend`
---                           defaultContext
---
---            makeItem ""
---                >>= templateFold "templates/dump.html" ctxs
---                >>= loadAndApplyTemplate "templates/default.html" notesCtx
---                >>= relativizeUrls
-
     create ["notes.html"] $ do
         route idRoute
         compile $ do
             hier <- buildHier "notes/**"
             let ctxs = hierarchyContext hier
-
-            let ctx = constField "title" "Notes" `mappend` defaultContext
-
-            makeItem "" >>= templateHierarchyFold ctxs >>= loadAndApplyTemplate "templates/default.html" ctx >>= relativizeUrls
+                ctx = constField "title" "Notes" `mappend` defaultContext
+            makeItem ""
+              >>= templateHierarchyFold ctxs
+              >>= loadAndApplyTemplate "templates/default.html" ctx
+              >>= relativizeUrls
 
     create ["archive.html"] $ do
         route idRoute
@@ -108,24 +91,15 @@ pandocMathCompiler =
                         }
     in pandocCompilerWith defaultHakyllReaderOptions writerOptions
 
-
-getDir :: FilePath -> Pattern
-getDir = fromGlob .  (++ "/*") . takeWhile (/= '/') . drop 1 .dropWhile  (/= '/') . show
-
-sortByM f xs = liftM (map fst . sortBy (comparing snd)) $ mapM (\x -> liftM (\y -> (x,y)) (f x)) xs
-
-sortCategories :: MonadMetadata m => [Item a] -> m [Item a]
-sortCategories = sortByM (\x -> getMetadataField' (itemIdentifier x) "category")
-
---foldM with the arguments rearranged since it is slightly nicer to have the initial item as the last argument
-mfold f [] i = return i
-mfold f (x:xs) i = f x i >>= mfold f xs
-
-templateFold temp cs = mfold (\c i -> loadAndApplyTemplate temp c i) cs
+--foldM with the arguments rearranged since it is slightly nicer for its use case
+mfold :: (Foldable t, Monad m) => (a -> b -> m b) -> t a -> b -> m b
+mfold f xs i = foldM (flip f) i xs
 
 capitalize :: String -> String
 capitalize [] = ""
-capitalize (s:str) = toUpper s : str
+capitalize (s:str) = toUpper s : (subUnderscore str)
+  where
+    subUnderscore = foldr (\x s -> (if x == '_' then ' ' else x) : s) ""
 
 
 data Hierarchy a = Leaf a
@@ -148,7 +122,10 @@ then latter once hierarchy is built flatten it into the templates for display
 --all the ones that share this form a node where the rest of the list can be further transformed
 --any with empty lists are a leaf
 
+stripHeads :: (Functor f, Eq a) => f ([[a]], b) -> f ([a], ([[a]], b))
 stripHeads xs = fmap (\(cats, val) -> if cats == [] then ([],([], val)) else (head cats, (tail cats, val))) xs
+
+groupHeads :: Eq a => [(a, b)] -> [(a, [b])]
 groupHeads [] = []
 groupHeads (x:xs) = go (fst x) [snd x] (xs)
   where
@@ -156,15 +133,17 @@ groupHeads (x:xs) = go (fst x) [snd x] (xs)
     go name acc (x:xs)
       | fst x == name = go name (snd x : acc) xs
       | otherwise = (name, acc) : go (fst x) [snd x] (xs)
+
+makeHier :: [([String], a)] -> [Hierarchy a]
 makeHier xs = go xs
   where
-    --first strip out leaves from processing
     go [] = []
     go xs = let leaves = fmap (\(_, v) -> Leaf v) $ filter (\(a,_) -> a == []) xs
                 nodes = filter (\(a,_) -> a /=[]) xs
             in leaves ++ makeNodes nodes
     makeNodes xs = fmap (\(name, items) -> Node name (go items)) $ groupHeads $ stripHeads xs
 
+buildHier :: MonadMetadata m => Pattern -> m (Hierarchy Identifier)
 buildHier pattern = do
   ids <- getMatches pattern
   let info = fmap (\f -> (drop 1 . splitDirectories . takeDirectory . toFilePath $ f, f)) ids
@@ -177,30 +156,22 @@ at nodes apply
   node_start
     templates to items
   node_end
--}
---templateHierFold (Leaf item) = let leafCtx = loadAndApplyTemplate "templates/value.html" leafCtx
---templateHierFold (Node name values) = loadAndApplyTemplate "templates/node_start.html" nodeCtx >>= mfold templateHierFold values >>= loadAndApplyTemplate "templates/node_end.html" nodeCtx
---
---templateHierarchyFold :: Hierarchy Identifier -> Item String -> Compiler (Item String)
---templateHierarchyFold (Leaf item) i = let leafCtx = urlField (toFilePath item) `mappend` bodyField (itemBody i) in trace (show item) (loadAndApplyTemplate "templates/value.html" leafCtx i)
---templateHierarchyFold (Node name values) i = let nodeCtx = constField "name" name `mappend` defaultContext
---                                             in return i
---                                                  >>= loadAndApplyTemplate "templates/node_start.html" nodeCtx
---                                                  >>= mfold templateHierarchyFold values
---                                                  >>= loadAndApplyTemplate "templates/node_end.html" defaultContext
 
-
-{-
 Seems like the contexts aren't being passed along properly for some reason
   seems to be when defaultContext becomes instantiated
 have to flatten into contexts to apply templates to like in the first iteration?
 have to be able to switch between node_start, value, and node_end
+
+Solution is to have the default context be looked up in a listField which is dorky and inelegant, but it works
+  definitely seems like there are better ways of doing this, but I'm not seeing them
+
+reverse order of values to get in alphabetical order
 -}
 
 hierarchyContext :: Hierarchy Identifier -> [(Identifier, Context String)]
 hierarchyContext (Leaf item) = [("templates/value.html", listField "stuff" defaultContext (sequence [load item]) `mappend` defaultContext)]
 hierarchyContext (Node "notes" values) = concatMap hierarchyContext values
-hierarchyContext (Node name values) = [("templates/node_start.html", constField "name" (capitalize name) `mappend` defaultContext)] ++ concatMap hierarchyContext values ++ [("templates/node_end.html", defaultContext)]
+hierarchyContext (Node name values) = [("templates/node_start.html", constField "name" (capitalize name) `mappend` defaultContext)] ++ concatMap hierarchyContext (reverse values) ++ [("templates/node_end.html", defaultContext)]
 
 templateHierarchyFold :: [(Identifier, Context String)] -> Item String -> Compiler (Item String)
-templateHierarchyFold cs = mfold (\(temp, c) i -> loadAndApplyTemplate temp c i) cs
+templateHierarchyFold = mfold (\(temp, c) i -> loadAndApplyTemplate temp c i)
