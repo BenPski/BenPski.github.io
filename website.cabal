@@ -20,4 +20,5 @@ executable website
   build-depends:       base >= 4.7 && < 5,
                        hakyll,
                        containers,
-                       pandoc
+                       pandoc,
+                       filepath
