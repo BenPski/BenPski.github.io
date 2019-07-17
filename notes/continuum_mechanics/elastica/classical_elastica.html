@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>BenPski - Classical Elastica</title>
+        <link rel="stylesheet" type="text/css" href="../../../css/default.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
+    </head>
+    <body>
+        <div id="header">
+            <div id="logo">
+                <a href="../../../">BenPski</a>
+            </div>
+            <div id="navigation">
+                <a href="../../../">Home</a>
+                <a href="../../../about.html">About</a>
+<!--                <a href="/contact.html">Contact</a>-->
+                <a href="../../../archive.html">Archive</a>
+                <a href="../../../notes.html">Notes</a>
+            </div>
+        </div>
+
+        <div id="content">
+            <h1>Classical Elastica</h1>
+
+            <p>A long, long time ago some old famous guy posed the problem: what is the shape of a slender rod stuck in the ground went bent by a hanging weight? This problem is the origin of the elastica, a model of slender rods that undergoes large deformations. The general elastica modeling procedure is a useful place to start when thinking about more complicated rod models and continuum mechanics in general, though given some of the assumptions it is necessary to look at continuum mechanics more deeply to really get a feel for it.</p>
+<p>SOME IMAGE</p>
+<p>For the classical elastica we start by considering the angle, <span class="math inline">\(\theta\)</span>, for every point along the rod and the positions <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span>. I denote the location along the rod with <span class="math inline">\(s\in[0,L]\)</span> where <span class="math inline">\(L\)</span> is the length of the rod. So, at every point along the body we have an angle, <span class="math inline">\(\theta(s)\)</span>, relative to the global frame and an <span class="math inline">\(x(s)\)</span> and <span class="math inline">\(y(s)\)</span> position. Considering that there is no change in length for the rod we can define:</p>
+<p><span class="math display">\[
+x' = -\sin(\theta) \\
+y' = \cos(\theta)
+\]</span> where <span class="math inline">\('\)</span> denotes the derivative with respect to <span class="math inline">\(s\)</span>. This is all the kinematics we need for the elastica.</p>
+<p>To balance the loads on the elastica we have two loads: the internal bending stiffness, and the moment due to the hanging weight. For the internal bending stiffness we have the moment <span class="math inline">\(M = K\theta'\)</span> where <span class="math inline">\(K\)</span> is the bending stiffness and <span class="math inline">\(\theta'\)</span> is the bending curvature, typically <span class="math inline">\(K = EI\)</span> where <span class="math inline">\(E\)</span> is the Young’s modulus and <span class="math inline">\(I\)</span> is the second moment of area for the cross sections of the rod. The moment due to the hanging weight is <span class="math inline">\(M = (x(s)-x(L))mg\)</span> where <span class="math inline">\(m\)</span> is the mass of the hanging weight and <span class="math inline">\(g\)</span> is the gravitational acceleration. Setting these equal to each other gives:</p>
+<p><span class="math display">\[
+K\theta' = (x(s)-x(L))mg
+\]</span></p>
+<p>Due to the dependence on <span class="math inline">\(x(L)\)</span> this form is slightly inconvenient to work with as it requires information that is not local; however we can take the derivative to get:</p>
+<p><span class="math display">\[
+K\theta'' = -mg\sin(\theta)
+\]</span></p>
+<p>Grouping together the coefficients into a single coefficient <span class="math inline">\(\theta'' = -\alpha \sin(\theta)\)</span>, creating a dimensionless spatial position <span class="math inline">\(\sigma = s/L\)</span> and reusing <span class="math inline">\('\)</span> to mean derivative with respect to <span class="math inline">\(\sigma\)</span> we have <span class="math inline">\(\theta'' = -\beta \sin(\theta)\)</span> with <span class="math inline">\(\beta = L^2\alpha\)</span>.</p>
+<p>The interesting feature for this equation is that it is exactly the same as a pendulum without damping or applied torques. So, we can interpret the shape of the elastica as the trace of the angle for a pendulum over some finite time horizon, where <span class="math inline">\(L\)</span> acts as the analog to the time horizon. This is mostly an interesting coincidence rather than a useful tool though.</p>
+<p>How do we solve for <span class="math inline">\(\theta(s)\)</span> of the rod? The punchline is that it is an elliptic integral that has to be computed numerically, but we need some tricks to get it into the desired form. The first step is to integrate both sides over <span class="math inline">\(d\theta\)</span>.</p>
+<p><span class="math display">\[
+\int \theta'' d\theta = -\beta\cos(\theta) + C
+\]</span></p>
+<p>For the left hand side we can do some manipulation. First expand <span class="math inline">\(d\theta\)</span> to <span class="math inline">\(\theta'd\sigma\)</span> and then with some cleverness we can note that:</p>
+<p><span class="math display">\[
+\theta''\theta' = \frac{1}{2}\frac{d}{d\sigma} (\theta'^2)
+\]</span></p>
+<p>This allows for rearranging the left hand side to:</p>
+<p><span class="math display">\[
+\int \theta'' d\theta = \frac{1}{2}\int \frac{d}{d\sigma} (\theta')^2 d\sigma = \frac{1}{2}\theta'^2
+\]</span></p>
+<p>To solve for the constant we know that at the tip of the rod will take on some angle <span class="math inline">\(\theta(L) = \phi\)</span> and that there is no moment at the tip and therefore <span class="math inline">\(\theta' = 0\)</span> which leaves:</p>
+<p><span class="math display">\[
+\theta'^2 = -2\beta(\cos(\theta) - \cos(\phi)) 
+\]</span></p>
+<p>Now we can get a first order differential equation which can be integrated to get <span class="math inline">\(\theta\)</span>. In evaluating the square root, the sign determines which side the rod bends towards so it is preference which to pick or specified by the problem, here I choose the positive root.</p>
+<p><span class="math display">\[
+\theta' = \sqrt{2\beta}\sqrt{\cos(\phi)-\cos(\theta)}
+\]</span></p>
+<p>Separating differentials and integrate gives:</p>
+<p><span class="math display">\[
+\int d\sigma = \int \frac{d\theta}{\sqrt{2\beta}\sqrt{\cos(\phi)-\cos(\theta)}}
+\]</span></p>
+<p>The left hand side is simple and we can rearrange the right hand side a bit.</p>
+<p><span class="math display">\[
+1 = \frac{1}{\sqrt{2\beta}}\int \frac{d\theta}{\sqrt{\cos(\phi)-\cos(\theta)}}
+\]</span></p>
+<p>Looking ahead a bit, we know that the solution is based on the elliptic integral of the first kind so we want the term in the integral to look like $. We can shift toward this form using <span class="math inline">\(cos(x) = 1-2\sin(x/2)^2\)</span> and get:</p>
+<p><span class="math display">\[
+1 = \frac{1}{\sqrt{\beta}} \int\frac{d\theta}{\sqrt{\sin(\phi/2)^2-\sin(\theta/2)^2}}
+\]</span></p>
+<p>To get into the desired form define a new angle <span class="math inline">\(2\gamma = \theta\)</span> and do some rearranging to get:</p>
+<p><span class="math display">\[
+1 = \frac{1}{A}\int_0^{\phi/2}\frac{d\gamma}{1-B\sin(\gamma)^2}
+\]</span> where <span class="math inline">\(A = \frac{1}{\sqrt{\beta}}\sin(\phi/2)\)</span> and <span class="math inline">\(B = \frac{1}{\sin(\phi/2)^2}\)</span>. Which is the form of the elliptic integral of the first kind. There are different forms and notations used for elliptic integrals, but I don’t want to manipulate them anymore.</p>
+<h1 id="solving">Solving</h1>
+<p>To actually solve this numerically you can either solve the elliptic equation or just use the ODE definition and integrate that in standard ways. I think the most straightforward way is to solve the ODE as a boundary value problem (BVP), at the base we know <span class="math inline">\(\theta(0) = 0\)</span>, at the tip we know <span class="math inline">\(\theta(L)' = 0\)</span>, and we have a second order differential equation <span class="math inline">\(\theta'' = \alpha\sin(\theta)\)</span> describing the system. That is an easy way to pose the problem, but BVPs can be slightly tricky to actually solve due to most numerical processes solving initial value problems (IVP). There are many ways to do this (pseudospectral, galerkin, shooting, etc.) and here I’ll show how to use a shooting method.</p>
+<p>For using a shooting method we use an IVP solver to integrate the ODEs using a guessed value for the unknown initial conditions,check that the known boundary conditions at the other side of the domain are satisfied, if they aren’t update the guess and repeat. This is essentially an IVP solver wrapped in a root-finding method.</p>
+<p>Since the elastica is a scalar valued problem it is easy enough to implement the solving procedure by hand in any language; however, if it were more complicated (especially in the equation solving/root finding) I’d recommend established libraries or software (though I know that it is always worth trying it once so you can see how much better someone else’s software is).</p>
+<p>For this the simplest numerical implementation uses what is known as forward Euler integration and Newton’s method for root solving. The forward Euler integration is the simplest numerical integrator there is, if we have a system <span class="math inline">\(\dot{x} = f(x,t)\)</span> we approximate the derivative as <span class="math inline">\(\dot{x} \approx \frac{x_{i+1}-x_i}{\Delta t}\)</span> where <span class="math inline">\(x_{i}\)</span> is the i-th discrete point of <span class="math inline">\(x\)</span> and <span class="math inline">\(\Delta t\)</span> is the discrete time step then evaluating <span class="math inline">\(f(x_i,t)\)</span> we get:</p>
+<p><span class="math display">\[
+x_{i+1} = x_i + \Delta tf(x_i,t)
+\]</span></p>
+<p>So, starting from some initial conditions, <span class="math inline">\(x_0\)</span>, we can integrate over the desired domain of <span class="math inline">\(t\)</span>. Now this only poses the problem as a first-order ODE, but all ODEs can be reduced to first-order systems by variable substitution. For the elastica problem we have:</p>
+<p><span class="math display">\[
+\theta'' = -\alpha\sin(\theta)
+\]</span></p>
+<p>To rewrite this into first-order form we can substitute <span class="math inline">\(x_0\)</span> for <span class="math inline">\(\theta\)</span> and <span class="math inline">\(\x_1\)</span> for <span class="math inline">\(\theta'\)</span> which will give:</p>
+<p><span class="math display">\[
+x_0' = x_1 \\
+x_1' = -\alpha\sin(x_0)
+\]</span> which is now in first-order form. Allowing us to write the use the integrator for the elastica problem.</p>
+<p>Now root-finding has many techniques and huge amounts of work going into it, but the simplest method is general is Newton’s method. Newton’s method goes:</p>
+<p><span class="math display">\[
+x_{n+1} = x_n - \frac{f(x_n)}{f'(x_n)}
+\]</span></p>
+<p>where <span class="math inline">\(f'\)</span> is the derivative of <span class="math inline">\(f\)</span>. Given a close enough initial guess this should converge to the root of <span class="math inline">\(f\)</span>. An issue arises when <span class="math inline">\(f'\)</span> is unavailable or inconvenient to compute. Several methods are available to deal with this, two simple methods are approximate the derivatives by finite differences and the secant method. The secant method approximates the derivative by the last two points visited while finite differences approximate the derivative by small perturbations in the input. Here I’m going to use finite differences to get better derivative information.</p>
+<p>The finite difference approximation is: <span class="math display">\[
+f'(x_n) = (f(x_n + \epsilon) - f(x_n))/\epsilon
+\]</span> where $is some small value (e.g., $110^{-5}). Substituting this into the Newton iteration we get:</p>
+<p><span class="math display">\[
+x_{n+1} = x_n - \epsilon\frac{f(x_n)}{f(x_n+\epsilon) - f(x_n)}
+\]</span></p>
+<p>With the forward Euler integrator and the Newton method the elastica problem can be solved by guessing <span class="math inline">\(\theta'(0)\)</span>, integrating the ODE with the Euler method, check the boundary condition <span class="math inline">\(\theta(L)' = 0\)</span>, and use Newton’s method to update the guess. This makes <span class="math inline">\(f\)</span> in Newton’s method the integrated value for <span class="math inline">\(\theta(L)'\)</span>.</p>
+<p>An implementation is shown below to play with. Just kidding, not sure how to do that right now.</p>
+<h1 id="extensions">Extensions</h1>
+<p>The original elastica problem can be generalized by considering arbitrary loading cases rather than just a hanging mass and it provides a simple prototype to analyze for rods. By having only bending stiffness in a single plane keeps the physics pretty simple, but it captures the main phenomena of most problems. The modeling and solving of this is found in other notes.</p>
+        </div>
+        <div id="footer">
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </div>
+    </body>
+</html>
