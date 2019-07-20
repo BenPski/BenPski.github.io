@@ -51,7 +51,7 @@ $$
 Both the variational principle and the Lagrange equations are extensions of the more typical forms to non-conservative systems.
 
 # Simple Example
-It can be difficult to know what the dependence on $z$ should look like, so to go through a simple example we consider a sprin-mass-damper system:
+It can be difficult to know what the dependence on $z$ should look like, so to go through a simple example we consider a spring-mass-damper system:
 
 $$
 m\ddot{q} + b\dot{q} + kq = 0
