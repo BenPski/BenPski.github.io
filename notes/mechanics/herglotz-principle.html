@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>BenPski - Herglotz Variational Principle</title>
+        <link rel="stylesheet" type="text/css" href="../../css/default.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
+    </head>
+    <body>
+        <div id="header">
+            <div id="logo">
+                <a href="../../">BenPski</a>
+            </div>
+            <div id="navigation">
+                <a href="../../">Home</a>
+                <a href="../../about.html">About</a>
+<!--                <a href="/contact.html">Contact</a>-->
+                <a href="../../archive.html">Archive</a>
+                <a href="../../notes.html">Notes</a>
+            </div>
+        </div>
+
+        <div id="content">
+            <h1>Herglotz Variational Principle</h1>
+
+            <p><span class="math display">\[
+\newcommand{\vary}[1]{\delta(#1)}
+\newcommand{\der}[2]{\frac{d#1}{d#2}}
+\newcommand{\pder}[2]{\frac{\partial#1}{\partial#2}}  
+\]</span></p>
+<p>In many mechanics formalisms it is assumed that the systems being analyzed are conservative and non-conservative phenomena ends up being included later, but what if the systems were assumed non-conservative from the start? Herglotz’ Variational Principle is similar to <a href="hamilton-principle.html">Hamilton’s Principle</a> (HP) and shares a similar relationship to the Euler-Lagrange equations except for the ability to have dissipative systems.</p>
+<p>Like in HP we being with a Lagrangian for the system <span class="math inline">\(L(q,\dot{q})\)</span> except we modify it to be potentially non-conservative. In order for the system to be non-conservative the Lagrangian must change in time. To introduce this behavior assume a dissipative Lagrangian of the form: <span class="math display">\[
+\dot{z} = L(q,\dot{q},z)
+\]</span></p>
+<p>To get back the typical Lagrangian the system has <span class="math inline">\(\dot{z} = 0\)</span>. Now <span class="math inline">\(z\)</span> acts as a measure of the dissipation in the system while still maintaining the regular mechanics.</p>
+<p>So now we can formulate a variational calculus problem like HP with this new <span class="math inline">\(L\)</span>. The action integral is then:</p>
+<p><span class="math display">\[
+S = \int_0^T L(q,\dot{q},z) dt
+\]</span> where <span class="math inline">\(T\)</span> is the time horizon and the boundary conditions are known for the system.</p>
+<p>If we were to follow the same steps as HP then we would run into an issue with <span class="math inline">\(z\)</span> because we do not know how to perturb it. However, observing that the derivative of <span class="math inline">\(z\)</span> is dependent on itself, the trajectory, and the trajectory velocity we can conclude that <span class="math inline">\(z\)</span> should be a function purely of the trajectory, <span class="math inline">\(z = z(q)\)</span>. With <span class="math inline">\(z\)</span> dependent on <span class="math inline">\(q\)</span> we can do the same as with HP and look for the stationary trajectory by perturbing the path. Also important to keep in mind that the pertubation can’t change the boundary conditions, <span class="math inline">\(\delta q(0) = \delta q(T) = 0\)</span>.</p>
+<p><span class="math display">\[
+S(q+\epsilon\delta q, \dot{q} + \epsilon\dot{\delta q}) = \int_0^T L(q+\epsilon\delta q, \dot{q}+\epsilon\dot{\delta q}, z(q+\epsilon\delta q))dt
+\]</span></p>
+<p>Evaluating the first variation we have:</p>
+<p><span class="math display">\[
+0 = \int_0^T (\pder{L}{q}\delta q + \pder{L}{\dot{q}}\dot{\delta q} + \pder{L}{z}\pder{z}{q}\delta q) dt 
+\]</span></p>
+<p>We can recognize that <span class="math inline">\(\pder{z}{q} = \pder{\dot{z}}{\dot{q}} = \pder{L}{\dot{q}}\)</span> and use integration by parts to eliminate <span class="math inline">\(\dot{\delta q}\)</span>. This rearranges to:</p>
+<p><span class="math display">\[
+0 = \int_0^T \delta q (\pder{L}{q} - \der{}{t}\pder{L}{\dot{q}} + \pder{L}{z}\pder{L}{\dot{q}})dt
+\]</span></p>
+<p>Recognizing that <span class="math inline">\(\delta q\)</span> is arbitrary then we get the modified Euler-Lagrange equations:</p>
+<p><span class="math display">\[
+\pder{L}{q} - \der{}{t}\pder{L}{\dot{q}} + \pder{L}{z}\pder{L}{\dot{q}} = 0
+\]</span></p>
+<p>Both the variational principle and the Lagrange equations are extensions of the more typical forms to non-conservative systems.</p>
+<h1 id="simple-example">Simple Example</h1>
+<p>It can be difficult to know what the dependence on <span class="math inline">\(z\)</span> should look like, so to go through a simple example we consider a spring-mass-damper system:</p>
+<p><span class="math display">\[
+m\ddot{q} + b\dot{q} + kq = 0
+\]</span></p>
+<p>Since we know the Lagrangian comes from kinetic and potential energy we can guess the form as:</p>
+<p><span class="math display">\[
+L = \frac{1}{2}m\dot{q}^2 - \frac{1}{2}kq^2 + \alpha z
+\]</span> where <span class="math inline">\(\alpha\)</span> is a coefficient to be determined.</p>
+<p>Using the dissipative Lagrange equations we get:</p>
+<p><span class="math display">\[
+-kq -m\ddot{q} + \alpha m\dot{q} = 0
+\]</span></p>
+<p>This should be the same as the original system. This means <span class="math inline">\(\alpha = -\frac{b}{m}\)</span> and the resulting Lagrangian is:</p>
+<p><span class="math display">\[
+L = \frac{1}{2}m\dot{q}^2 - \frac{1}{2}kq^2 - \frac{b}{m} z
+\]</span></p>
+        </div>
+        <div id="footer">
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </div>
+    </body>
+</html>

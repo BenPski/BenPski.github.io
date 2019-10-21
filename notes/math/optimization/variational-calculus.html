@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>BenPski - Variational Calculus</title>
+        <link rel="stylesheet" type="text/css" href="../../../css/default.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
+    </head>
+    <body>
+        <div id="header">
+            <div id="logo">
+                <a href="../../../">BenPski</a>
+            </div>
+            <div id="navigation">
+                <a href="../../../">Home</a>
+                <a href="../../../about.html">About</a>
+<!--                <a href="/contact.html">Contact</a>-->
+                <a href="../../../archive.html">Archive</a>
+                <a href="../../../notes.html">Notes</a>
+            </div>
+        </div>
+
+        <div id="content">
+            <h1>Variational Calculus</h1>
+
+            <p><span class="math display">\[
+\newcommand{\der}[2]{\frac{d#1}{d#2}}
+\newcommand{\pder}[2]{\frac{\partial#1}{\partial#2}}  
+\newcommand{\firstVary}[1]{\der{}{\epsilon} #1 \rvert_{\epsilon=0}}
+\]</span></p>
+<p>Variational calculus aims to solve optimization problems by finding the path extremizes the optimization, <span class="math inline">\(\min_q \int_0^T L(q,\dot q) dt\)</span>, or finds a stable point with the variation of the objective, <span class="math inline">\(0 = \delta(\int_0^T L(q, \dot q) dt)\)</span>. This is a useful tool for posing optimization problems and as a consequence mechanics problems.</p>
+<p>From single variable and multivariable calculus we generally know the way to find minima and maxima of functions. An extrema exists where the curve becomes flat or where the derivative is 0. This works for when we try to find a point, such as the minimum potential, but what do you do when trying to find the minimizing function or trajectory? This is what Variational Calculus is about, finding the extrema of functionals rather than functions.</p>
+<p>Functionals are high order functions or functions that map functions to numbers. The most common form of a functional is an integral which can usually be seen as a total cost or total value for a path. In general if an objective is specified it is desired to find the optimal path for that objective which can be stated as:</p>
+<p><span class="math display">\[
+\min_{q(t)} J = \int_0^T C(q(t)) dt
+\]</span> where <span class="math inline">\(q(t)\)</span> is the trajectory, <span class="math inline">\(J\)</span> is the total cost, <span class="math inline">\(T\)</span> is the time horizon, and <span class="math inline">\(C\)</span> is the local cost. Now it is possible to want to maximize as well, but minimizing is the more common default.</p>
+<p>We can see that <span class="math inline">\(J\)</span> is a functional, given <span class="math inline">\(q(t)\)</span> a function from time to a configuration we compute a numerical value by integrating over some time horizon, <span class="math inline">\(T\)</span>. Just like we can extremize a function by finding where the derivative is 0 we want to develop a similar way to find the extremizing function.</p>
+<p>In the function case the idea was to find a point where an infinitely small perturbation doesn’t change the value, aka the limit definition of the derivative.</p>
+<p><span class="math display">\[
+\lim_{\epsilon \rightarrow 0} \frac{f(x+\epsilon) - f(x)}{\epsilon} = 0
+\]</span></p>
+<p>Now the limit perturbs a point by an offset to that point, so for a function we should perturb that function by another function and evaluate some sort of limit seems like the intuitive approach.</p>
+<p>To start with the optimization problem and the trajectory <span class="math inline">\(q\)</span> that should optimize the objective we imagine coming up with another trajectory similar to <span class="math inline">\(q\)</span>. We can do so by perturbing <span class="math inline">\(q\)</span> by some new trajectory <span class="math inline">\(\delta q\)</span>.</p>
+<p><span class="math display">\[
+q \rightarrow q + \epsilon\delta q
+\]</span> where <span class="math inline">\(\epsilon\)</span> is a scaling factor for the size of the perturbation and <span class="math inline">\(\delta q\)</span> is a trajectory that doesn’t change the problem. By doesn’t change the problem it means that the new trajectory respects the boundary conditions as the physical system is determined by its physics as well as its boundary conditions. This is quantified as <span class="math inline">\(\delta q(0) = \delta q(T) = 0\)</span>. So, now we have a new trajectory that is a potential candidate for the optimal trajectory, but we want to determine what the optimal one is.</p>
+<p>Using the idea that in the limit of a small perturbation the value should not change we can use:</p>
+<p><span class="math display">\[
+\lim_{\epsilon \rightarrow 0} \frac{J(q+\epsilon\delta q) - J(q)}{\epsilon} = 0
+\]</span></p>
+<p>This allows us to find the equivalent of a derivative on a function for a functional. This is referred to as the first variation and is like the first derivative. Other higher-order variations can be defined, but usually only the first and occasionally the second are necessary. The first variation can be written as:</p>
+<p><span class="math display">\[
+\delta(f(x)) = \frac{d}{d\epsilon} f(x+\epsilon\delta x) \rvert_{\epsilon = 0} 
+\]</span> where <span class="math inline">\(\delta()\)</span> stands for the first variation.</p>
+<p>So, with an objective defined as a functional applying the first variation and setting it equal to 0 gives a procedure for determining the optimal trajectory for the objective. When necessary the second variation can be used to determine if it is a minima or maxima like a concavity check.</p>
+<h1 id="examples">Examples</h1>
+<h2 id="shortest-distance-between-two-points">Shortest distance between two points</h2>
+<p>For a simple example what is the shortest distance between 2 points? Obviously this should just be a line, but can we prove it?</p>
+<p>The objective here would be the length of some function <span class="math inline">\(f\)</span> and we want to minimize it. First then is how do we measure the length of a curve? We can measure the length of a curve by computing its arclength. This is done as: <span class="math display">\[
+L = \int_a^b \lVert f'(s) \rVert ds
+\]</span> where <span class="math inline">\(L\)</span> is the length of the curve between points <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span> and the integrand is the norm of the function’s derivative.</p>
+<p>Since we are trying to find the curve <span class="math inline">\(f\)</span> that minimizes the distance between points <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span> the arclength serves as a functional objective which variational calculus ca be applied to. Taking the first variation of <span class="math inline">\(L\)</span> and setting it equal to 0 should give a way to determine the optimal <span class="math inline">\(f\)</span>.</p>
+<p><span class="math display">\[
+\delta(L) = \frac{d}{d\epsilon} \int \lVert f' + \epsilon y' \rVert ds \rvert_{\epsilon = 0}= 0
+\]</span> where instead of <span class="math inline">\(\delta f\)</span> I’ve used <span class="math inline">\(y\)</span> as the perturbing curve because it is a bit clearer. Now evaluating the derivative of the norm can be a bit tricky so wecan rephrase the norm in terms of a summation:</p>
+<p><span class="math display">\[
+\firstVary{\int_a^b \sqrt{\sum_i (f_i'+\epsilon y_i')^2}ds} = 0
+\]</span> where the subscript <span class="math inline">\(i\)</span> denotes a component of the curve. The derivative is then:</p>
+<p><span class="math display">\[
+\int_a^b \frac{\sum_i y_i'(f_i' + \epsilon y_i')}{\sqrt{\sum_i (f_i'+\epsilon y_i')^2}}ds\rvert_{\epsilon=0} = 0
+\]</span></p>
+<p>Then applying <span class="math inline">\(\epsilon = 0\)</span>:</p>
+<p><span class="math display">\[
+\int_a^b \frac{\sum_i y_i'f_i'}{\sqrt{\sum_i (f_i')^2}}ds = 0
+\]</span></p>
+<p>Using integration by parts and the boundary conditions on <span class="math inline">\(y\)</span> to get rid of the derivative of <span class="math inline">\(y\)</span> we get:</p>
+<p><span class="math display">\[
+\int_a^b \frac{\sum{y_if_i''}}{\lVert f'\rVert} ds = 0
+\]</span></p>
+<p>So, in order for the integral to always evaluate to 0 for arbitrary <span class="math inline">\(y\)</span> that means each component on <span class="math inline">\(f''\)</span> must be 0:</p>
+<p><span class="math display">\[
+f_i''=0
+\]</span></p>
+<p>This implies the <span class="math inline">\(f_i'\)</span> is a constant and therefore <span class="math inline">\(f_i\)</span> is linear in <span class="math inline">\(s\)</span>. <span class="math display">\[
+f_i(s) = a_i + b_is
+\]</span></p>
+<p>So the shortest distance between two points is a linear function.</p>
+<h2 id="brachistochrone">Brachistochrone</h2>
+<p>There is fairly well known problem known as the Brachistochrone problem. This asks the question if a particle moves under the force of gravity what is the curve that results in the shortest time between two points.</p>
+<p>So, we can look at this as a bead sliding down a wire described by <span class="math inline">\(f(s)\)</span> without friction. For simplicity we will restrict the curve to being planar which doesn’t change the problem as intuitively it seems the solution must be planar as any out of plane motion (zig-zagging) will just slow it down. The curve can then be described in the x-y plane as:</p>
+<p><span class="math display">\[
+f(s) = \begin{bmatrix} x(s) \\ y(s) \end{bmatrix}
+\]</span></p>
+<p>Then the physics say that it is accelerating only due to gravity which will be in the negative y direction. So, we can use energy to determine the behavior. We have the balance between potetial and kinetic energy as: <span class="math display">\[
+mgy + \frac{1}{2}mv^2 = 0
+\]</span> where <span class="math inline">\(m\)</span> is the mass, <span class="math inline">\(g\)</span> is the gravitational acceleration, and <span class="math inline">\(v\)</span> is the velocity. This means the velocity is: <span class="math display">\[
+v = \sqrt{2g}\sqrt{-y}
+\]</span></p>
+<p>We then know that the velocity is the rate at with the particle travels along the curve and we have: <span class="math display">\[
+v = \der{s}{t} = \der{s}{x}\der{x}{t}
+\]</span></p>
+<p>Given that the infinitesimals on the curve form a right triangle we have <span class="math inline">\(ds^2 = dx^2+dy^2\)</span> which allows for the volcity to be stated as: <span class="math display">\[
+v = \sqrt{1+y'^2der{x}{t}
+\]</span></p>
+<p>Setting the velocities equal we have: <span class="math display">\[
+\sqrt{2g}\sqrt{-y} = \sqrt{1+y'^2}\der{x}{t}
+\]</span></p>
+<p>Then going back to the objective of the problem, minimizing the total time we have the objective as:</p>
+<p><span class="math display">\[
+J = \int_0^T dt
+\]</span></p>
+<p>Using the velocity equality we can rewrite this as:</p>
+<p><span class="math display">\[
+J = \frac{1}{\sqrt{2g}}\int \frac{\sqrt{1+y'^2}}{\sqrt{-y}} dx
+\]</span></p>
+<p>Now here is where we would typically apply the first variation and set it equal to 0; however, the algebra can get pretty messy in this approach. To avoid this we can look at a more general problem.</p>
+<p>If we have the integrand as some function <span class="math inline">\(L(t,q,\dot{q})\)</span> we will get the following condition on <span class="math inline">\(q\)</span>: <span class="math display">\[
+\pder{L}{q} - \der{}{t}\pder{L}{\dot{q}} = 0
+\]</span> which should remind you of Lagrangian mechanics (too see the derivation look at <a href="../../mechanics/hamilton-principle.html">Hamilton’s Principle</a>. However, in the case when there is no explicit dependence on <span class="math inline">\(t\)</span> we can make another similar statement:</p>
+<p><span class="math display">\[
+L - \dot{q}\pder{L}{\dot{q}} = C
+\]</span> where <span class="math inline">\(C\)</span> is some constant. Using this form will give some nicer algebra and since it is a conclusion from applying the variation we do not have to actually go through that process we can just substitute <span class="math inline">\(L = \frac{\sqrt{1+y'^2}}{\sqrt{-y}}\)</span>.</p>
+<p><span class="math display">\[
+y'(\frac{y'}{\sqrt{-y}\sqrt{1+y'^2}}) - \frac{1+y'^2}{\sqrt{-y}} = C
+\]</span></p>
+<p>With some manipulation this becomes:</p>
+<p><span class="math display">\[
+y(1+y'^2) = C
+\]</span></p>
+<p>Which happens to be the ODE for the Brachistochrone, several forms for the explicit equation can be found, but the main thing was noticing that the mainpulation can be simplified when looking for a constant rather than stationary solution.</p>
+        </div>
+        <div id="footer">
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </div>
+    </body>
+</html>
