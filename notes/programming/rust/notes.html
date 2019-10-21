@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>BenPski - The Rust Programming Language Notes</title>
+        <link rel="stylesheet" type="text/css" href="../../../css/default.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
+    </head>
+    <body>
+        <div id="header">
+            <div id="logo">
+                <a href="../../../">BenPski</a>
+            </div>
+            <div id="navigation">
+                <a href="../../../">Home</a>
+                <a href="../../../about.html">About</a>
+<!--                <a href="/contact.html">Contact</a>-->
+                <a href="../../../archive.html">Archive</a>
+                <a href="../../../notes.html">Notes</a>
+            </div>
+        </div>
+
+        <div id="content">
+            <h1>The Rust Programming Language Notes</h1>
+
+            <h1 id="chapter-4-ownership">Chapter 4: Ownership</h1>
+<p>Main idea is around ownership, tracking usage to avoid allocation and freeing of memory without the use of garbage collection.</p>
+<h2 id="section-1">Section 1</h2>
+<p>Assignment from an existing variable occurs either with moves or copies. Essentially both are shallow copies of data types, but when a data type is fully allocated on the stack (e.g., numbers) a shallow copy is identical to a deep copy. Makes some slight differences in passing arguments and scope when a value is moved or copy, old references are invalid in a move. Ownership is continually transferred when working with values or given up and acquired repeatedly. Can use clone for deep copies.</p>
+<h2 id="section-2">Section 2</h2>
+<p>To avoid moves and copies have references to borrow data, ownership is still involved but the references are what transfer ownership rather than the values themselves. Can reference immutably and mutable, &amp; is the referencing operator and * is the de-referencing operator. Only allowed one mutable reference at a time. Cannot have a mutable and immutable reference at the same time.</p>
+<h2 id="section-3">Section 3</h2>
+<p>Slices refer to a section of memory on the heap, specifically sections of a string are string slices. Make slices by &amp;string[a..b], initial and final index can be left implicit.</p>
+<h1 id="chapter-5-structs">Chapter 5: Structs</h1>
+<p>Structs are product types and are like most other implementations in other languages.</p>
+<h2 id="section-1-1">Section 1</h2>
+<p>Defining structs:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode rust"><code class="sourceCode rust"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">struct</span> Name <span class="op">{</span></a>
+<a class="sourceLine" id="cb1-2" title="2">    field1: <span class="kw">type</span>,</a>
+<a class="sourceLine" id="cb1-3" title="3">    field2: type,</a>
+<a class="sourceLine" id="cb1-4" title="4">    ... ,</a>
+<a class="sourceLine" id="cb1-5" title="5">}</a></code></pre></div>
+<p>Initialize structs:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode rust"><code class="sourceCode rust"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">let</span> s = Struct <span class="op">{</span>field1: value, field2: value, ...<span class="op">}</span>;</a></code></pre></div>
+<p>Access fields using dot notation. and if it is mutable also use dot notation for mutation.</p>
+<p>The whole struct must be mutable, can’t only have some fields mutable and other immutable.</p>
+<p>When initializing can eliminate field names if the variable matches the field name. Example <code>let s = Test {value: value};</code> <span class="math inline">\(\rightarrow\)</span> <code>let s = Test {value};</code>. For initializing a new instance of a struct from data in an existing struct can do:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode rust"><code class="sourceCode rust"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">let</span> x1 = Thing <span class="op">{</span>...<span class="op">}</span>;</a>
+<a class="sourceLine" id="cb3-2" title="2"><span class="kw">let</span> x2 = Thing <span class="op">{</span>field1: value,</a>
+<a class="sourceLine" id="cb3-3" title="3">                ..x1<span class="op">}</span>;               </a></code></pre></div>
+<p>to copy all non-specified fields from the existing data.</p>
+<p>Tuple structs are just adding names to tuples to distinguish their type, working with them is just like tuples. Fields are accessed by index rather than name, <code>x.0</code> is the first item.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode rust"><code class="sourceCode rust"><a class="sourceLine" id="cb4-1" title="1"><span class="kw">struct</span> Thing(<span class="kw">type</span>, type);</a>
+<a class="sourceLine" id="cb4-2" title="2"><span class="kw">let</span> z = Thing(x, y);</a></code></pre></div>
+<p>Structs should own all their data. If it uses references then lifetimes are necessary.</p>
+<p>Have Unit-like structs with no fields <code>struct Unit;</code>.</p>
+<h2 id="section-2-1">Section 2</h2>
+<p>Not really about structs, but using <code>[#derive(Debug)]</code> and <code>println!({:?}, struct)</code> is convenient for simple initial printing. Can also use <code>{:#?}</code> to be a bit prettier.</p>
+<h2 id="section-3-1">Section 3</h2>
+<p>Can define methods on structs to make it more obvious that certain functions are associated with certain data types. Essentially acting like classes.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode rust"><code class="sourceCode rust"><a class="sourceLine" id="cb5-1" title="1"><span class="kw">struct</span> Interval <span class="op">{</span></a>
+<a class="sourceLine" id="cb5-2" title="2">    lower: <span class="dt">f64</span>,</a>
+<a class="sourceLine" id="cb5-3" title="3">    upper: <span class="dt">f64</span>,</a>
+<a class="sourceLine" id="cb5-4" title="4"><span class="op">}</span></a>
+<a class="sourceLine" id="cb5-5" title="5"></a>
+<a class="sourceLine" id="cb5-6" title="6"><span class="kw">impl</span> Interval <span class="op">{</span></a>
+<a class="sourceLine" id="cb5-7" title="7">    <span class="kw">fn</span> average(&amp;<span class="kw">self</span>) -&gt; <span class="dt">f64</span> <span class="op">{</span></a>
+<a class="sourceLine" id="cb5-8" title="8">        (<span class="kw">self</span>.upper + <span class="kw">self</span>.lower)/<span class="dv">2</span></a>
+<a class="sourceLine" id="cb5-9" title="9">    <span class="op">}</span></a>
+<a class="sourceLine" id="cb5-10" title="10"><span class="op">}</span></a></code></pre></div>
+<p>When defining the methods do not need to specify type for <code>self</code> as it is obvious from context. <code>self</code> can be the value or a reference and can be mutable or immutable just like regular function arguments.</p>
+<p>When calling methods use dot syntax. No need to worry about referencing and dereferencing as that is handled implicitly.</p>
+<p>Associated functions are functions defined in an <code>impl</code> block, but do not take <code>self</code> as an argument. These would typically be constructors. These functions are namespaced by the struct like they are for modules.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode rust"><code class="sourceCode rust"><a class="sourceLine" id="cb6-1" title="1"><span class="kw">impl</span> Interval <span class="op">{</span></a>
+<a class="sourceLine" id="cb6-2" title="2">    <span class="kw">fn</span> init(lower: <span class="dt">f64</span>, upper: <span class="dt">f64</span>) -&gt; Interval <span class="op">{</span></a>
+<a class="sourceLine" id="cb6-3" title="3">        Interval <span class="op">{</span>lower, upper<span class="op">}</span></a>
+<a class="sourceLine" id="cb6-4" title="4">    <span class="op">}</span></a>
+<a class="sourceLine" id="cb6-5" title="5"><span class="op">}</span></a></code></pre></div>
+<p>Can always have multiple <code>impl</code> blocks.</p>
+<h1 id="chapter-6-enums-and-pattern-matching">Chapter 6: Enums and Pattern Matching</h1>
+<p>Enumerations are sum types. With enumerations pattern matching can be done for more concise code similar to Haskell.</p>
+<h2 id="section-1-2">Section 1</h2>
+<p>Syntax for enums is:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode rust"><code class="sourceCode rust"><a class="sourceLine" id="cb7-1" title="1"><span class="kw">enum</span> Sum <span class="op">{</span></a>
+<a class="sourceLine" id="cb7-2" title="2">    A(<span class="kw">type</span>),</a>
+<a class="sourceLine" id="cb7-3" title="3">    B(type),</a>
+<a class="sourceLine" id="cb7-4" title="4">}</a>
+<a class="sourceLine" id="cb7-5" title="5"></a>
+<a class="sourceLine" id="cb7-6" title="6">let a = <span class="pp">Sum::</span>A;</a>
+<a class="sourceLine" id="cb7-7" title="7"><span class="kw">let</span> b = <span class="pp">Sum::</span>B;</a></code></pre></div>
+<p>Also, I don’t think it was mentioned before, there are anonymous structs <code>{x: i32, y: i32}</code>. These can be used in the definitions of data structures.</p>
+<p>Can also define methods on enums using <code>impl</code> like for structs.</p>
+<h3 id="option">Option</h3>
+<p>Just like maybe</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode rust"><code class="sourceCode rust"><a class="sourceLine" id="cb8-1" title="1"><span class="kw">enum</span> <span class="dt">Option</span>&lt;T&gt; <span class="op">{</span></a>
+<a class="sourceLine" id="cb8-2" title="2">    <span class="cn">Some</span>(T),</a>
+<a class="sourceLine" id="cb8-3" title="3">    <span class="cn">None</span>,</a>
+<a class="sourceLine" id="cb8-4" title="4"><span class="op">}</span></a></code></pre></div>
+<h2 id="section-2-2">Section 2</h2>
+<p><code>match</code> is just like <code>case</code> it allows for control flow by pattern matching.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode rust"><code class="sourceCode rust"><a class="sourceLine" id="cb9-1" title="1"><span class="kw">match</span> expr <span class="op">{</span></a>
+<a class="sourceLine" id="cb9-2" title="2">    Variant1 =&gt; res1,</a>
+<a class="sourceLine" id="cb9-3" title="3">    Variant2 =&gt; res2,</a>
+<a class="sourceLine" id="cb9-4" title="4">    ...,</a>
+<a class="sourceLine" id="cb9-5" title="5"><span class="op">}</span></a></code></pre></div>
+<p><code>_</code> always matches a value.</p>
+<h2 id="section-3-2">Section 3</h2>
+<p>When there is only one variant being matched on can use <code>if let</code> to be a bit more concise. Also can use and <code>else</code> branch for all non-matches.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode rust"><code class="sourceCode rust"><a class="sourceLine" id="cb10-1" title="1"><span class="kw">if</span> <span class="kw">let</span> Variant = expr <span class="op">{</span></a>
+<a class="sourceLine" id="cb10-2" title="2">    <span class="co">// do something</span></a>
+<a class="sourceLine" id="cb10-3" title="3"><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></a>
+<a class="sourceLine" id="cb10-4" title="4">    <span class="co">//do something else</span></a>
+<a class="sourceLine" id="cb10-5" title="5"><span class="op">}</span></a></code></pre></div>
+<h1 id="chapter-7-packages-crates-and-modules">Chapter 7: Packages, Crates, and Modules</h1>
+<p>Essentially how to organize code.</p>
+<p>Paths: naming things Modules: group paths Crates: tree of modules Package: manipulate crates</p>
+<h2 id="section-1-3">Section 1</h2>
+<p>Packages must contain at least one crate, it can contain 0 or 1 crates, and it can contain any number of binaries. Crates are either library crates or binary crates. A package is defined by a TOML file.</p>
+<p><code>cargo new NAME</code> creates a new package. The presence of <code>main.rs</code> implies it is an executable crate and <code>lib.rs</code> implies a library crate. Automatically creates a TOML configuration. Can have both <code>main.rs</code> and <code>lib.rs</code> in <code>src</code>. For multiple binaries put files in <code>src/bin</code>, each file is a binary.</p>
+<p>Crates group scope for usage in code.</p>
+<h2 id="section-2-3">Section 2</h2>
+<p>Modules group code for organization and control public and private access.</p>
+<p><code>cargo new --lib NAME</code> initializes a library.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode rust"><code class="sourceCode rust"><a class="sourceLine" id="cb11-1" title="1"><span class="kw">mod</span> MOD_NAME <span class="op">{</span></a>
+<a class="sourceLine" id="cb11-2" title="2">    <span class="co">//mod_items</span></a>
+<a class="sourceLine" id="cb11-3" title="3"><span class="op">}</span></a></code></pre></div>
+<p>Modules can be nested.</p>
+<h2 id="section-3-3">Section 3</h2>
+<p>Paths are for locating definitions of functions and data structures. Paths can be absolute or relative. Absolute specifies the whole path starting from <code>crate</code> and relative uses identifiers such as <code>self</code> and <code>super</code>. <code>::</code> separates hierarchy levels.</p>
+<p>Everything defaults to private and to make things public have to use <code>pub</code>. Parent definitions are in scope for child modules and child module definitions are hidden by default to parent modules.</p>
+<p><code>pub</code> goes on both modules and definitions in the module.</p>
+<p><code>super</code> goes up one level in the module hierarchy much like <code>..</code> in a filesystem.</p>
+<p>For structs each field can be private or public. For enums either it is all public or all private.</p>
+<h2 id="section-4">Section 4</h2>
+<p><code>use</code> brings paths into scope like importing. <code>use crate::thing::mod</code> brings <code>mod</code> into scope and the public functions in <code>mod</code> are called as <code>mod::func()</code>. If dealing with a relative path use <code>self::path</code>.</p>
+<p>Can alias an import using <code>as</code>. <code>use crate::thing::mod as ThingMod</code>.</p>
+<p><code>pub use</code> allows imports to be public or re-exported.</p>
+<p>To use external dependencies add the package name to the <code>Cargo.toml</code> file under <code>[dependencies]</code> and then you can <code>use</code> that package. The standard library, <code>std</code>, is always implicitly a dependency.</p>
+<p>To shorten repetitive <code>use</code>’s can do nested paths. <code>std::io::{self, Write};</code> imports <code>std::io</code> and <code>std::io::Write</code>.</p>
+<p><code>*</code> brings all public things into scope.</p>
+<h2 id="section-5">Section 5</h2>
+<p>To use a module from a separate file write <code>mod thing;</code>. Having a semicolon rather than braces indicates it is in another file. Layout the file structure like the modules would be laid out in a file.</p>
+<h1 id="chapter-8-common-collections">Chapter 8: Common Collections</h1>
+<p>Look at data structures that live on the heap and store multiple values.</p>
+<p>Vectors, strings, and hash maps</p>
+<h2 id="section-1-4">Section 1</h2>
+<p>Vectors, <code>Vec&lt;T&gt;</code>, is an ordered array of homogeneous elements.</p>
+<p>Can create an empty vector with <code>Vec::new()</code> or initialize a vector with the macro <code>vec![...]</code>.</p>
+<p>Push an element to the end with <code>.push(val)</code>.</p>
+<p>Reading elements can either be done by indexing or getting. Indexing causes a panic if the index is our of range and <code>.get()</code> returns an <code>Option&lt;T&gt;</code>. Indexing is done with a <code>&amp;arr[index]</code>. Indexing starts at 0.</p>
+<p>Cannot mutate vector if a immutable reference exists. The memory can move on updates.</p>
+<p>Can iterate over elements using <code>for</code> loops.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode rust"><code class="sourceCode rust"><a class="sourceLine" id="cb12-1" title="1"><span class="kw">for</span> i <span class="kw">in</span> &amp;v <span class="op">{</span></a>
+<a class="sourceLine" id="cb12-2" title="2">    ...</a>
+<a class="sourceLine" id="cb12-3" title="3"><span class="op">}</span></a></code></pre></div>
+<p>gets a reference to each element.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode rust"><code class="sourceCode rust"><a class="sourceLine" id="cb13-1" title="1"><span class="kw">for</span> i <span class="kw">in</span> &amp;<span class="kw">mut</span> v <span class="op">{</span></a>
+<a class="sourceLine" id="cb13-2" title="2">    ...</a>
+<a class="sourceLine" id="cb13-3" title="3"><span class="op">}</span></a></code></pre></div>
+<p>gets mutable reference to each element. Have to dereference the value to update it.</p>
+<h2 id="section-2-4">Section 2</h2>
+<p>Strings are hard because language is complicated when you try to include all of them. Rust gives the ability to interpret strings in various ways, but not quite like a list of characters common in other languages.</p>
+<p>To initialize strings either use <code>String::new()</code> for an empty string, <code>.to_string()</code> for anything with the <code>Display</code> trait, or <code>String::from()</code> to initialize from a string slice.</p>
+<p>Append to a string using <code>.push()</code> for a character and <code>.push_str()</code> for a string.</p>
+<p>Concatenate using <code>+</code> or using <code>format!</code>. Addition needs the second argument to be a reference. Format is more convenient for complex concatenation, <code>format!(&quot;{} and {}&quot;, s1, s2)</code>.</p>
+<p>Can get all characters in a string with <code>.chars()</code> and all bytes using <code>.bytes()</code>.</p>
+<h2 id="section-3-4">Section 3</h2>
+<p>Have to <code>use std::collections::HashMap</code> to use.</p>
+<p>Initialize with <code>new()</code>, no macro for initialization. Can use <code>.collect()</code> on a vector of tuples to create a hash map a bit easier.</p>
+<p>Use <code>.insert(key, value)</code> to insert into the map. Insert keeps last value inserted.</p>
+<p>Retrieve using <code>.get()</code>. Can also iterate over a hash map using a for loop,</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode rust"><code class="sourceCode rust"><a class="sourceLine" id="cb14-1" title="1"><span class="kw">for</span> (key, value) <span class="kw">in</span> map <span class="op">{</span></a>
+<a class="sourceLine" id="cb14-2" title="2">    ...</a>
+<a class="sourceLine" id="cb14-3" title="3"><span class="op">}</span></a></code></pre></div>
+<p><code>.entry()</code> combined with <code>.or_insert()</code> allows for checking if a field is assigned to and inserting something if not.</p>
+<p>Can update a value by using a reference to that value (<code>.or_insert()</code> returns a mutable reference).</p>
+        </div>
+        <div id="footer">
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </div>
+    </body>
+</html>

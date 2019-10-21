@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>BenPski - Modeling Lambda Calculus</title>
+        <link rel="stylesheet" type="text/css" href="../../../css/default.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
+    </head>
+    <body>
+        <div id="header">
+            <div id="logo">
+                <a href="../../../">BenPski</a>
+            </div>
+            <div id="navigation">
+                <a href="../../../">Home</a>
+                <a href="../../../about.html">About</a>
+<!--                <a href="/contact.html">Contact</a>-->
+                <a href="../../../archive.html">Archive</a>
+                <a href="../../../notes.html">Notes</a>
+            </div>
+        </div>
+
+        <div id="content">
+            <h1>Modeling Lambda Calculus</h1>
+
+            <p>For a functional programming language it is naturally modelled and translated to lambda calculus and will be the basis of implementing the language. Here I just want to look at the very basics of modeling lambda calculus to begin working with the data. There are 3 objects in lambda calculus:</p>
+<ul>
+<li>Variables</li>
+<li>Abstraction</li>
+<li>Application</li>
+</ul>
+<p>The essential idea and motivation of lambda calculus is to work with the simplest construction of functions primarily in the sense of computation and it turns out that these 3 objects make up this construction.</p>
+<p>Variables are the same familiar idea of variables from math and programming. In the context of functions they are what map arguments to where they belong in the body of the function. Typically in text these will be lowercase letters, but can be pretty much any old string.</p>
+<p>Abstraction captures the idea of writing functions and looks like: <span class="math display">\[ \lambda x . E \]</span> where the item between the <span class="math inline">\(lambda\)</span> and the <span class="math inline">\(.\)</span> is a single variable that is called the head of the expression and <span class="math inline">\(E\)</span> is some expression in the lambda calculus and is called the body. This captures the idea of defining functions because when the abstraction is applied to an argument (or an argument is passed to it) it assigns that argument to the head and wherever the head appears in the body it is replaced with the argument. For example, if we apply <span class="math inline">\(\lambda x . x + 3\)</span> to <span class="math inline">\(y\)</span> we substitute all occurrences of <span class="math inline">\(x\)</span> in the body with <span class="math inline">\(y\)</span> to get <span class="math inline">\(y+3\)</span>.</p>
+<p>Application is then the idea of passing arguments to functions and is indicated by adjacency: <span class="math display">\[ M N \]</span> where <span class="math inline">\(M\)</span> is applied to <span class="math inline">\(N\)</span> (or <span class="math inline">\(N\)</span> is the argument passed to <span class="math inline">\(M\)</span>). When there are multiple applications written without parenthesis they are assumed to happen left to right, <span class="math inline">\(M N O = ((M N) O)\)</span>.</p>
+<p>These are the fundamental constructions for implementing a functional programming language as the lambda calculus is equivalent to a Turing machine and therefore is a model of computation. It is associated primarily with functional programming because essentially everything is viewed as a function and function application where imperative languages work primarily with statements which lambda calculus doesn’t directly model. It may seem a little too limited to be a fully functioning way to make a programming language and practically it is, but theoretically it is not.</p>
+<h1 id="basic-lambda-calculus">Basic Lambda Calculus</h1>
+<p>The simplest lambda function is the identity function <span class="math display">\[
+\lambda x . x
+\]</span> applying this to any expression will evaluate to the expression.</p>
+<p>For anything more complicated it is useful to allow multiple variables in the head of a lambda to make it easier to read. <span class="math display">\[
+(\lambda x\, y . E) = (\lambda x . (\lambda y . E))
+\]</span></p>
+<p>Now to make use of lambda calculus as a model of computation you have to decide on an interpretation of what the lambda expression will stand for. This may be a bit confusing, but it is like interpreting 1’s and 0’s to represent numbers or characters.</p>
+<p>The most basic data type is boolean values. <span class="math display">\[
+True = \lambda x\, y . x \\
+False = \lambda x\, y . y
+\]</span></p>
+<p>So, when something is true then we select its first argument, when something is false we select the second argument. This is just like how if conditions typically work in programming, depending on the condition we choose the first or second branch.</p>
+<p>Then the basic boolean operations can be defined to work with these values. To start lets define not. <span class="math display">\[
+Not = \lambda f\, x\, y. f\, y\, x
+\]</span> this swaps the order of the branches in a conditional <span class="math inline">\(f\)</span> which is just like inverting the if condition is equivalent to swapping the order of the branches. To show <span class="math inline">\(Not True = False\)</span> we can do the following: <span class="math display">\[\begin{align}
+False &amp; = Not\, True \\
+\lambda x\, y . y &amp; = (\lambda f\, x\, y. f\, y\, x) (\lambda a\, b . a) \\
+&amp; = (\lambda x\, y . (\lambda a\, b . a) y\, x) \\
+&amp; = (\lambda x\, y . y) 
+\end{align}\]</span> where variable names have been changed so that no confusion occurs (if <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span> were used in both <span class="math inline">\(Not\)</span> and <span class="math inline">\(True\)</span> then it is very easy to confuse which expressions belong to which).</p>
+<p>The other basic operations are <span class="math inline">\(And\)</span> and <span class="math inline">\(Or\)</span>. These can be defined as: <span class="math display">\[
+And = \lambda a\, b\, x\, y . a\, (b\, x\, y)\, y \\
+Or = \lambda a\, b\, x\, y . a\, x\, (b\, x\, y)
+\]</span></p>
+<p>This defines the basics of boolean algebra in lambda calculus. Interpretations for natural numbers and arithmetic on natural numbers exist as well as for other data structures like pairs. This is why lambda calculus forms a very simple model for programming languages, but it is inconvenient to write by hand. In a lot of ways programming languages can be seen as decorated lambda calculus making much of the tedium of expressing ideas in lambda calculus easier. So, if we can transform a language to lambda calculus and have an execution strategy for lambda calculus then we can execute the original language. This is the approach that I’ll be looking at.</p>
+<p>There are other interesting things like the SKI combinators and the Y combinator and other important definitions (like what a combinator is), but I won’t be looking at them or at least not yet.</p>
+<h1 id="de-bruijn-notation">De Bruijn Notation</h1>
+<p>One issue that comes up with lambda calculus is variable name overlap (forget the formal name). During the substitution step in application its possible to have expressions with the same variable in their bodies, but the variables are bound to different heads making the substitution confusing if you’re not careful. It essentially comes down to <span class="math inline">\(\alpha\)</span>-equivalence. <span class="math display">\[
+(\lambda x . x) = (\lambda y . y)
+\]</span> variable names are arbitrary, just position is what matters.</p>
+<p>One way to avoid this from ever occurring is using De Bruijn notation for lambda calculus. Instead of using variable names to bind expressions to we use indices that indicate which abstraction the value belongs to. The index is a count of how deep the binding is. When numbers aren’t defined in the system I’ll just use numbers to count the index, when numbers are defined # will indicate an index. <span class="math display">\[
+\lambda x . x \Rightarrow \lambda 1 \\
+\lambda x . \lambda y . x \Rightarrow \lambda (\lambda 2) \\
+\lambda x . \lambda y . y \Rightarrow \lambda (\lambda 1)
+\]</span></p>
+<p>This notation is more convenient to work with when variable names can overlap; however, even though it is shorter I think it is more tedious to write and more difficult to read. Though, I’m intending to actually write lambda calculus, or at least not purely, and just convert a language to it and then execute it. So, writing it isn’t too much of a consideration and the benefit of not running into naming issues could be of use.</p>
+<p>Now I know that <a href="https://www.microsoft.com/en-us/research/publication/the-implementation-of-functional-programming-languages/">The Implementation of Functional Programming Languages</a> uses regular lambda calculus notation and I’m not sure if there is a reason for why De Bruijn notation isn’t used (it is a bit harder to print a lambda “nicely”), so I’ll start with it anyways.</p>
+<h1 id="data-structure">Data Structure</h1>
+<p>To begin actually executing any code the lambda calculus needs a definition that the runtime will understand and be able to execute. At its simplest, lambda calculus with De Bruijn notation can be written using haskell syntax as:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">data</span> <span class="dt">Expr</span> <span class="fu">=</span> <span class="dt">Index</span> <span class="dt">Int</span> <span class="fu">|</span> <span class="dt">Lambda</span> <span class="dt">Expr</span> <span class="fu">|</span> <span class="dt">Apply</span> <span class="dt">Expr</span> <span class="dt">Expr</span></a></code></pre></div>
+<p>An expression is either an index, a lambda abstraction, or application. Now it is possible to construct something nonsensical with this definition (e.g., Apply (Index 1) (Index 1)), but just being careful prevents this. Also, looking down the road a bit, laziness can be performed by evaluating expressions to weak head normal form (WHNF) and nonsense expressions can just be considered to be in WHNF most likely and probably won’t cause too much of an issue. If it isn’t okay then it is a problem for future me.</p>
+<p>Next thing to look at is an actual starting implementation.</p>
+        </div>
+        <div id="footer">
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </div>
+    </body>
+</html>

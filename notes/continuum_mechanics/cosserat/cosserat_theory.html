@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>BenPski - Cosserat Theory</title>
+        <link rel="stylesheet" type="text/css" href="../../../css/default.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
+    </head>
+    <body>
+        <div id="header">
+            <div id="logo">
+                <a href="../../../">BenPski</a>
+            </div>
+            <div id="navigation">
+                <a href="../../../">Home</a>
+                <a href="../../../about.html">About</a>
+<!--                <a href="/contact.html">Contact</a>-->
+                <a href="../../../archive.html">Archive</a>
+                <a href="../../../notes.html">Notes</a>
+            </div>
+        </div>
+
+        <div id="content">
+            <h1>Cosserat Theory</h1>
+
+            <p>In continuum mechanics there are several different distinctions for modeling approaches depending on the base assumptions going into them. For example, generally there is a distinction between finite strains and infinitesimal strains where the latter is simpler and generally the point of introduction for solid mechanics. There are also what are known as microstructure theories. In these approaches rather than treating the fundamental element of a body as a particle they are infinitesimal bodies with extra structure than just a position. For Cosserat theory it is a finite strain theory that treats the microstructure as a rigid body, so it has both position and orientation which is why it can be referred to as a micropolar theory. Cosserat theory, as far as I’m aware, is the earliest microstructural theory and the introduction to the idea of the directed curve in continuum mechanics (though this may belong to Kirchhoff rod theory due to their similarities). Since, Cosserat theory is the approach to modeling solids that I’m familiar with I will be writing about the basic ideas, though much of the notation comes from a robotics approach (e.g., Screw theory) so for people more familiar with standard continuum mechanics notation and terminology (e.g., tensor stuff) this may be a bit odd.</p>
+<h1 id="kinematics">Kinematics</h1>
+<p>In Cosserat theory every point in a body is described by a position and orientation relative to some fixed frame. This means that every point in the body can be described by the Special Euclidean group (<span class="math inline">\(SE(3)\)</span>) which is also the description of generalized rigid body displacements commonly used in robotics. So, relative to a fixed frame we have a rotation, <span class="math inline">\(R\in SO(3)\)</span>, and a position, <span class="math inline">\(p\in\mathbb{R}^3\)</span>, which can be joined into a homogeneous transformation matrix, <span class="math inline">\(g\in SE(3)\)</span>: <span class="math display">\[
+g = \begin{bmatrix} R &amp; p \\ 0 &amp; 1 \end{bmatrix}
+\]</span></p>
+<p>Then, we define however many necessary spatial parameters, <span class="math inline">\(s\)</span>, to locate any point in the body uniquely. In the case of a rod we have one, a surface has two, and so on. These will typically be defined on some bounded interval. Then for every point in the body we have <span class="math inline">\(g(s_1,s_2,s_3)\)</span> to describe the configuration of the body. At every point for the spatial parameters we can imagine an orthonormal frame being attached to the body at that point, these are generally called the directors, the director frame, or can be seen as the body frame. The directors are what allow us to define the position and orientation of a point relative to the fixed frame.</p>
+<p>Now, we notice that <span class="math inline">\(SE(3)\)</span> is a Lie group and can therefore evaluate the derivative with respect to space as: <span class="math display">\[\begin{equation}
+\frac{\partial}{\partial s_i} g = g\hat{\xi}_i
+\end{equation}\]</span> where <span class="math inline">\(\hat{\xi}_i\in se(3)\)</span> is the Lie algebra element of <span class="math inline">\(se(3)\)</span> along the i-th spatial parameter. Here <span class="math inline">\(\hat\)</span> represents the isomorphism from <span class="math inline">\(\mathbb{R}^6\)</span> to <span class="math inline">\(se(3)\)</span> as all Lie algebras have both a vector and matrix representation (not quite, there are more abstract representations of Lie groups and algebras). <span class="math display">\[\begin{gather}
+\xi = \begin{bmatrix} \omega_1 \\ \omega_2 \\ \omega_3 \\ \nu_1 \\ \nu_2 \\ \nu_3 \end{bmatrix} \\
+\hat{\xi} = 
+\end{gather}\]</span></p>
+<p>Borrowing some terminology from Screw theory, we call the Lie group elements the configuration or displacement and the Lie algebra elements the twists. In Screw theory twist refers specifically to a generalized velocity (both angular and linear combined); however, we now have twists not just defined by the time derivative so they’ll be referred to as spatial and temporal twists. With the mention of the temporal twist we also have: <span class="math display">\[\begin{equation}
+\frac{\partial}{\partial t} g = g\hat{\eta}
+\end{equation}\]</span> where <span class="math inline">\(\eta\)</span> is the temporal twist or generalized velocity.</p>
+<p>Using the fact that partial derivatives commute we can relate any of the algebras together using: <span class="math display">\[\begin{equation}
+\frac{\partial}{\partial x_i} \xi_j = \frac{\partial}{\partial x_j} \xi_i + ad_{\xi_j} \xi_i
+\end{equation}\]</span> where <span class="math inline">\(x_i\)</span> is any spatial or time parameter and <span class="math inline">\(\xi_i\)</span> are any of the spatial or temporal twists.</p>
+<p>Which is the beginnings of the kinematics, though to proceed with the physics the deformation gradient and strains need to be defined.</p>
+<p>One thing to consider is that Lie groups also have derivatives defined as: <span class="math inline">\(\dot{g} = \hat{x}g\)</span>. Here we choose the form we did because it means the twists correspond to values in the body frame which is a bit more convenient to work with, I think.</p>
+<h1 id="deformation">Deformation</h1>
+<h1 id="dynamics">Dynamics</h1>
+        </div>
+        <div id="footer">
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </div>
+    </body>
+</html>
