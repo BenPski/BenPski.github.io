@@ -134,19 +134,19 @@ groupHeads (x:xs) = go (fst x) [snd x] (xs)
       | fst x == name = go name (snd x : acc) xs
       | otherwise = (name, acc) : go (fst x) [snd x] (xs)
 
-makeHier :: [([String], a)] -> [Hierarchy a]
+makeHier :: Ord a => [([String], a)] -> [Hierarchy a]
 makeHier xs = go xs
   where
     go [] = []
     go xs = let leaves = fmap (\(_, v) -> Leaf v) $ filter (\(a,_) -> a == []) xs
                 nodes = filter (\(a,_) -> a /=[]) xs
             in leaves ++ makeNodes nodes
-    makeNodes xs = fmap (\(name, items) -> Node name (go items)) $ groupHeads $ stripHeads xs
+    makeNodes xs = fmap (\(name, items) -> Node name (go items)) $ groupHeads $ stripHeads $ sort xs
 
 buildHier :: MonadMetadata m => Pattern -> m (Hierarchy Identifier)
 buildHier pattern = do
   ids <- getMatches pattern
-  let info = fmap (\f -> (drop 1 . splitDirectories . takeDirectory . toFilePath $ f, f)) ids
+  let info = fmap (\f -> (drop 1 . splitDirectories . takeDirectory . toFilePath $ f, f)) (sort ids)
   return (Node "notes" $ makeHier info)
 
 

@@ -1,1 +1,11 @@
-$body$
+<span style="width:100%">
+    $if(next)$
+    <div style="float:right"><a href="$next$.html">Next</a></div>
+    $endif$
+    $if(prev)$
+        <div style="float:left"><a href="$prev$.html">Prev</a></div>
+    $endif$
+</span>
+<div style="display:inline-block">
+    $body$
+</div>
