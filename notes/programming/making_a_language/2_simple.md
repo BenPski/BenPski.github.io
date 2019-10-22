@@ -4,51 +4,25 @@ prev: 1_intro
 next: 3_interp
 ---
 
-In the last section started looking at lambda calculus, now want to actually start implementing it and playing with it. Since, it is just a simple implementation it'll be just trying some different data structures and printing.
+In the last section I started looking at lambda calculus, now I'd like to start implementing and playing with it. This will be a just the basics of lambda calculus.
 
-For lambda calculus with De Bruijn notation the basic definition written in haskell is:
+Writing simple lambda calculus in `haskell` notation looks like:
 ```haskell
-data Expr = Index Int
+data Expr = Variable String
           | Lambda Expr
           | Apply Expr Expr
 ```
 
-For rust we can decide how to layout the structure with a bit more control. We can use an immutable data structure or can use a mutable structure with pointers. I'm not too comfortable with rust's memory system yet, but I know the basic references are Box, RC, and ARC. 
+For `rust` the structure has a bit more control over how pointers are handled and can work with mutable and immutable structures safely.
 
-Given that I'd like to make some progress in the language and that I'm still not too comfortable with rust to make decent progress, I'm going to be implementing the first version of the language in python because I find it easier to prototype and test with. Also, from here forward the language will be known as `bagl` for Ben's Awesomely Good Language.
+Given that I'd like to make some progress in the language and that I'm still not too comfortable with `rust` to make decent progress, I'm going to be implementing the first version of the language in python because I find it easier to prototype and test with. Also, from here forward the language will be known as `bagl` for "Ben's Awesomely Good Language".
 
 # Lambda Calculus: Python
 
 To model an expression first I'll lay out the structure similarly to the haskell definition:
 
 ```python
-class Expr():
-    __metaclass__ = ABCMeta
-
-    def __init__(self):
-        pass
-
-
-class Index(Expr):
-    def __init__(self, n):
-        self.n = n
-
-
-class Lambda(Expr):
-    def __init__(self, expr):
-        self.expr = expr
-
-
-class Apply(Expr):
-    def __init__(self, left, right):
-        self.left = left
-        self.right = right
-```
-
-This works as a first implementation, but their will be a few inconvenient things about it. First, there are no variables/symbols for representing values when testing, but this should be easy to add. The most annoying problem will be having to define functions that traverse over the expression tree as that can be a bit tedious for objects relative to functional programming languages, this can be handled using the *visitor pattern*. For the visitor pattern what happens is the data structure (e.g., the expression object tree) defines a method called `accept` that takes a visitor calls the appropriate visitor method on itself, the visitor then defines the relevant methods to operate on the individual components of the data structure. This makes it a lot like a functor definition in haskell. One issue is that this is quite tedious and a lot of boilerplate to write as the different kinds of nodes in the expression tree grows, but this can be handled with some scripting/metaprogramming. The `Expr` definition with variables and the visitor pattern implemented is:
-
-```python
-class Expr():
+lass Expr():
     """
     The expression tree object for lambda calculus
     """
@@ -71,25 +45,14 @@ class Variable(Expr):
         return visitor.visitVariable(self)
 
 
-class Index(Expr):
-    """
-    Index in de bruijn notation
-    """
-
-    def __init__(self, n):
-        self.n = n
-
-    def accept(self, visitor):
-        return visitor.visitIndex(self)
-
-
 class Lambda(Expr):
     """
     Lambda abstraction
     """
 
-    def __init__(self, expr):
-        self.expr = expr
+    def __init__(self, head, body):
+        self.head = head
+        self.body = body
 
     def accept(self, visitor):
         return visitor.visitLambda(self)
@@ -106,20 +69,22 @@ class Apply(Expr):
 
     def accept(self, visitor):
         return visitor.visitApply(self)
+```
 
+This works as a first implementation, but their will be a few inconvenient things about it. The most annoying problem will be having to define functions that traverse over the expression tree as that can be a bit tedious for objects relative to functional programming languages, this can be handled using the *visitor pattern*. For the visitor pattern what happens is the data structure (e.g., the expression object tree) defines a method called `accept` that takes a visitor calls the appropriate visitor method on itself, the visitor then defines the relevant methods to operate on the individual components of the data structure. This makes it a lot like a functor definition in haskell. One issue is that this is quite tedious and a lot of boilerplate to write as the different kinds of nodes in the expression tree grows, but this can be handled with some scripting/metaprogramming. The visitor pattern for `Expr` is defined as follows:
 
+```python
 class ExprVisitor():
     """
     Visitor definition for the expression tree
     """
     __metaclass__ = ABCMeta
 
-    @abstractmethod
-    def visitVariable(self, elem):
-        pass
+    def __call__(self, expr):
+        return expr.accept(self)
 
     @abstractmethod
-    def visitIndex(self, elem):
+    def visitVariable(self, elem):
         pass
 
     @abstractmethod
@@ -131,32 +96,32 @@ class ExprVisitor():
         pass
 ```      
 
-To get a view of how the visitor pattern works lets take a look at a simple printer for the expressions. For this variables just display their string, indices show a # and their index, lambdas display a $\lambda$ (or just \\) in this case, and apply juxtaposes its values.
+The visitor will allow us to recursively call operations defined by `self` easily over the expression tree. Note that `__call__` has been defined for convenience of recursive calls, so rather than writing `elem.accept(self)` everywhere we write `self(elem)`. 
+
+To get a view of how the visitor pattern works lets take a look at a simple printer for the expressions. For this variables just display their string, lambdas display a $\lambda$ (or just \\) in this case, and apply juxtaposes its values.
 
 ```python
 class ExprPrint(ExprVisitor):
     def visitVariable(self, elem):
         return elem.s
 
-    def visitIndex(self, elem):
-        return "#" + str(elem.n)
-
     def visitLambda(self, elem):
-        return "(\\ " + elem.expr.accept(self) + ")"
+        return "(\\" + self(elem.head) + "." + self(elem.body) + ")"
 
     def visitApply(self, elem):
-        return elem.left.accept(self) + " " + elem.right.accept(self)
+        return self(elem.left) + " " + self(elem.right)
 ```
 
 Which can be called as:
 
 ```python
-id = Lambda(Index(1))
 x = Variable("x")
-expr = Apply(id,x)
+y = Variable("y")
+id = Lambda(x, x)
+expr = Apply(id,y)
 printer = ExprPrint()
-print(expr.accept(printer))
+print(printer(expr))
 ```
-to get: `(\ #1) x` as expected.
+to get: `(\x.x) y` as expected.
 
-Next, we can move onto interpreting the expressions.
+So, now lambda functions can be written and next we can start to interpret or evaluate lambda expressions.
