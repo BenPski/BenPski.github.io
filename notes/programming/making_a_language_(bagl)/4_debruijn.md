@@ -1,6 +1,7 @@
 ---
 title: "Lambda Calculus: Converting to De Bruijn Notation"
 prev: 3_interp
+next: 5_interp2
 ---
 
 As mentioned early on in the discussion of lambda calculus I talked about De Bruijn notation (DBN). This is a way of getting rid of any naming collisions with variables, but it is more difficult to write. This motivates writing regular lambda calculus and then convert to DBN before evaluating the expression. 
