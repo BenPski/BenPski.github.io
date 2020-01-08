@@ -136,15 +136,15 @@
     \delta S = 0 = \der{}{\epsilon} \int \int \bar{L}(q+\epsilon \delta q, \dot{q} + \epsilon\dot{\delta q}, \der{q}{s} + \epsilon\der{}{s}\delta q) ds\,dt
 \]</span> as the variation of the action.</p>
 <p>Simplifying we have: <span class="math display">\[
-    0 = \int\int \pder{\bar{L}}{q}\delta q + \pder{\bar{L}{\dot{q}}\dot{\delta q} + \pder{\bar{L}}{\der{q}{s}}\der{\delta q}{s} ds\,dt
+    0 = \int\int \pder{\bar{L}}{q}\delta q + \pder{\bar{L}}{\dot{q}}\dot{\delta q} + \pder{\bar{L}}{\der{q}{s}}\der{\delta q}{s} ds\,dt
 \]</span></p>
 <p>Using integration by parts and intechanging the order of integration we get:</p>
 <p><span class="math display">\[
-    0 = \int_0^\tau (\pder{\bar{L}}{\der{q}{s}\delta q|_{s=0}^{1} + \int_0^1 \delta q (\pder{bar{L}{q} - \der{}{t}\pder{\bar{L}}{\dot{q}} - \der{}{s}\pder{\bar{L}}{\der{q}{s}})ds)dt
+    0 = \int_0^\tau (\pder{\bar{L}}{\der{q}{s}}\delta q|_{s=0}^{1} + \int_0^1 \delta q (\pder{bar{L}}{q} - \der{}{t}\pder{\bar{L}}{\dot{q}} - \der{}{s}\pder{\bar{L}}{\der{q}{s}})ds)dt
 \]</span> where <span class="math inline">\(s\in[0, 1]\)</span> is assumed for the sake of specifying the boundary conditions and that <span class="math inline">\(\delta q(t=0) = \delta q(t=\tau) = 0\)</span>.</p>
 <p>Now, the variation on the boundary conditions for space depends on the problem. If the boundaries are fixed (e.g., the end is connected to a rigid wall) then the variations at the boundary are 0, but if the boundaries are free we do not have that restriction. In the fixed boundaries case we have:</p>
 <p><span class="math display">\[
-    0 = \int\int \delta q (\pder{\bar{L}{q}} - \der{}{t}\pder{\bar{L}}{\dot{q} - \der{}{s}\pder{\bar{L}}{\der{q}{s}})ds\,dt
+    0 = \int\int \delta q (\pder{\bar{L}}{q} - \der{}{t}\pder{\bar{L}}{\dot{q}} - \der{}{s}\pder{\bar{L}}{\der{q}{s}})ds\,dt
 \]</span></p>
 <p>It can be easily seen that this implies: <span class="math display">\[
     0 = \pder{\bar{L}{q}} - \der{}{t}\pder{\bar{L}}{\dot{q} - \der{}{s}\pder{\bar{L}}{\der{q}{s}}
