@@ -201,7 +201,7 @@ $$
 
 It can be easily seen that this implies:
 $$
-    0 = \pder{\bar{L}{q}} - \der{}{t}\pder{\bar{L}}{\dot{q} - \der{}{s}\pder{\bar{L}}{\der{q}{s}}
+    0 = \pder{\bar{L}}{q} - \der{}{t}\pder{\bar{L}}{\dot{q}} - \der{}{s}\pder{\bar{L}}{\der{q}{s}}
 $$
 
 or the Euler-Lagrange equations over a one-dimensional field.
@@ -209,7 +209,7 @@ or the Euler-Lagrange equations over a one-dimensional field.
 For the not fixed case we can say that the term due to the boundary conditions will cancel with the constant of integration and provide the form of the boundary condition equations for the system of partial differential equations and we get the same equation as before, but with boundary conditions:
 
 \begin{gather}
-    0 = \pder{\bar{L}{q}} - \der{}{t}\pder{\bar{L}}{\dot{q} - \der{}{s}\pder{\bar{L}}{\der{q}{s}} \\
+    0 = \pder{\bar{L}}{q} - \der{}{t}\pder{\bar{L}}{\dot{q}} - \der{}{s}\pder{\bar{L}}{\der{q}{s}} \\
     \pder{\bar{L}}{\der{q}{s}}(s=0) = a \\
     \pder{\bar{L}}{\der{q}{s}}(s=1) = b \\
 \end{gather}
