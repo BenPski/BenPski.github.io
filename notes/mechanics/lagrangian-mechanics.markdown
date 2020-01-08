@@ -183,20 +183,20 @@ as the variation of the action.
 
 Simplifying we have:
 $$
-    0 = \int\int \pder{\bar{L}}{q}\delta q + \pder{\bar{L}{\dot{q}}\dot{\delta q} + \pder{\bar{L}}{\der{q}{s}}\der{\delta q}{s} ds\,dt
+    0 = \int\int \pder{\bar{L}}{q}\delta q + \pder{\bar{L}}{\dot{q}}\dot{\delta q} + \pder{\bar{L}}{\der{q}{s}}\der{\delta q}{s} ds\,dt
 $$
 
 Using integration by parts and intechanging the order of integration we get:
 
 $$
-    0 = \int_0^\tau (\pder{\bar{L}}{\der{q}{s}\delta q|_{s=0}^{1} + \int_0^1 \delta q (\pder{bar{L}{q} - \der{}{t}\pder{\bar{L}}{\dot{q}} - \der{}{s}\pder{\bar{L}}{\der{q}{s}})ds)dt
+    0 = \int_0^\tau (\pder{\bar{L}}{\der{q}{s}}\delta q|_{s=0}^{1} + \int_0^1 \delta q (\pder{bar{L}}{q} - \der{}{t}\pder{\bar{L}}{\dot{q}} - \der{}{s}\pder{\bar{L}}{\der{q}{s}})ds)dt
 $$
 where $s\in[0, 1]$ is assumed for the sake of specifying the boundary conditions and that $\delta q(t=0) = \delta q(t=\tau) = 0$.
 
 Now, the variation on the boundary conditions for space depends on the problem. If the boundaries are fixed (e.g., the end is connected to a rigid wall) then the variations at the boundary are 0, but if the boundaries are free we do not have that restriction. In the fixed boundaries case we have:
 
 $$
-    0 = \int\int \delta q (\pder{\bar{L}{q}} - \der{}{t}\pder{\bar{L}}{\dot{q} - \der{}{s}\pder{\bar{L}}{\der{q}{s}})ds\,dt
+    0 = \int\int \delta q (\pder{\bar{L}}{q} - \der{}{t}\pder{\bar{L}}{\dot{q}} - \der{}{s}\pder{\bar{L}}{\der{q}{s}})ds\,dt
 $$ 
 
 It can be easily seen that this implies:
