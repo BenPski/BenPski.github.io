@@ -24,12 +24,12 @@ $$
 
 Now the solution to this equation for $\vary{z}$ is:
 $$
-\vary{z}\exp{-\int_0^t \pder{L}{z}ds} = \int (\pder{L}{q}\delta q + \pder{L}{\dot{q}}\dot{\delta q})\exp{-\int_0^t\pder{L}{z}ds}dt
+\vary{z}\exp(-\int_0^t \pder{L}{z}ds) = \int (\pder{L}{q}\delta q + \pder{L}{\dot{q}}\dot{\delta q})\exp(-\int_0^t\pder{L}{z}ds)dt
 $$
 
 We can use integration by parts and the unperturbed boundary conditions on the right hand side to get:
 $$
-0 = \vary{z}\exp{-\int \pder{L}{z}dt} = \int \delta q\exp{-\int\pder{L}{z}dt}(\pder{L}{q} - \der{}{t}\pder{L}{\dot{q}} + \pder{L}{z}\pder{L}{\dot{q}})dt
+0 = \vary{z}\exp(-\int \pder{L}{z}dt) = \int \delta q\exp(-\int\pder{L}{z}dt)(\pder{L}{q} - \der{}{t}\pder{L}{\dot{q}} + \pder{L}{z}\pder{L}{\dot{q}})dt
 $$
 
 Which since the variation of $q$ must be arbitrary we have:
