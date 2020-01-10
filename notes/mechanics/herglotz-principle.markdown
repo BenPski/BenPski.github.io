@@ -15,38 +15,32 @@ $$
 \dot{z} = L(q,\dot{q},z)
 $$
 
-To get back the typical Lagrangian the system has $\dot{z} = 0$. Now $z$ acts as a measure of the dissipation in the system while still maintaining the regular mechanics. 
+Now for the system we are looking for the extremal of the functional $z(q,t)$ instead of the action of the system as in Hamilton's principle. $z$ and the action are very similar. So, we are looking for $\vary{z} = 0$.
 
-So now we can formulate a variational calculus problem like HP with this new $L$. The action integral is then:
-
+First, we take the variation of the differential equation:
 $$
-S = \int_0^T L(q,\dot{q},z) dt
-$$ 
-where $T$ is the time horizon and the boundary conditions are known for the system. 
-
-If we were to follow the same steps as HP then we would run into an issue with $z$ because we do not know how to perturb it. However, observing that the derivative of $z$ is dependent on itself, the trajectory, and the trajectory velocity we can conclude that $z$ should be a function purely of the trajectory, $z = z(q)$. With $z$ dependent on $q$ we can do the same as with HP and look for the stationary trajectory by perturbing the path. Also  important to keep in mind that the pertubation can't change the boundary conditions, $\delta q(0) = \delta q(T) = 0$.
-
-$$
-S(q+\epsilon\delta q, \dot{q} + \epsilon\dot{\delta q}) = \int_0^T L(q+\epsilon\delta q, \dot{q}+\epsilon\dot{\delta q}, z(q+\epsilon\delta q))dt
+\dot{\vary{z}} = \pder{L}{q}\delta q + \pder{L}{\dot{q}}\dot{\delta q} + \pder{L}{z}\vary{z}
 $$
 
-Evaluating the first variation we have:
-
+Now the solution to this equation for $\vary{z}$ is:
 $$
-0 = \int_0^T (\pder{L}{q}\delta q + \pder{L}{\dot{q}}\dot{\delta q} + \pder{L}{z}\pder{z}{q}\delta q) dt 
-$$
-
-We can recognize that $\pder{z}{q} = \pder{\dot{z}}{\dot{q}} = \pder{L}{\dot{q}}$ and use integration by parts to eliminate $\dot{\delta q}$. This rearranges to:
-
-$$
-0 = \int_0^T \delta q (\pder{L}{q} - \der{}{t}\pder{L}{\dot{q}} + \pder{L}{z}\pder{L}{\dot{q}})dt
+\vary{z}\exp{-\int_0^t \pder{L}{z}ds} = \int (\pder{L}{q}\delta q + \pder{L}{\dot{q}}\dot{\delta q})\exp{-\int_0^t\pder{L}{z}ds}dt
 $$
 
-Recognizing that $\delta q$ is arbitrary then we get the modified Euler-Lagrange equations:
+We can use integration by parts and the unperturbed boundary conditions on the right hand side to get:
+$$
+0 = \vary{z}\exp{-\int \pder{L}{z}dt} = \int \delta q\exp{-\int\pder{L}{z}dt}(\pder{L}{q} - \der{}{t}\pder{L}{\dot{q}} + \pder{L}{z}\pder{L}{\dot{q}})dt
+$$
 
+Which since the variation of $q$ must be arbitrary we have:
 $$
-\pder{L}{q} - \der{}{t}\pder{L}{\dot{q}} + \pder{L}{z}\pder{L}{\dot{q}} = 0
+0 = \pder{L}{q} - \der{}{t}\pder{L}{\dot{q}} + \pder{L}{z}\pder{L}{\dot{q}}
 $$
+as the generalized Lagrange equations. 
+
+We can see that if $L$ is independent of $z$ then we simply have the original Lagrange equations.
+
+
 
 Both the variational principle and the Lagrange equations are extensions of the more typical forms to non-conservative systems.
 
