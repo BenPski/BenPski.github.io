@@ -43,10 +43,10 @@
 \dot{\vary{z}} = \pder{L}{q}\delta q + \pder{L}{\dot{q}}\dot{\delta q} + \pder{L}{z}\vary{z}
 \]</span></p>
 <p>Now the solution to this equation for <span class="math inline">\(\vary{z}\)</span> is: <span class="math display">\[
-\vary{z}\exp{-\int_0^t \pder{L}{z}ds} = \int (\pder{L}{q}\delta q + \pder{L}{\dot{q}}\dot{\delta q})\exp{-\int_0^t\pder{L}{z}ds}dt
+\vary{z}\exp(-\int_0^t \pder{L}{z}ds) = \int (\pder{L}{q}\delta q + \pder{L}{\dot{q}}\dot{\delta q})\exp(-\int_0^t\pder{L}{z}ds)dt
 \]</span></p>
 <p>We can use integration by parts and the unperturbed boundary conditions on the right hand side to get: <span class="math display">\[
-0 = \vary{z}\exp{-\int \pder{L}{z}dt} = \int \delta q\exp{-\int\pder{L}{z}dt}(\pder{L}{q} - \der{}{t}\pder{L}{\dot{q}} + \pder{L}{z}\pder{L}{\dot{q}})dt
+0 = \vary{z}\exp(-\int \pder{L}{z}dt) = \int \delta q\exp(-\int\pder{L}{z}dt)(\pder{L}{q} - \der{}{t}\pder{L}{\dot{q}} + \pder{L}{z}\pder{L}{\dot{q}})dt
 \]</span></p>
 <p>Which since the variation of <span class="math inline">\(q\)</span> must be arbitrary we have: <span class="math display">\[
 0 = \pder{L}{q} - \der{}{t}\pder{L}{\dot{q}} + \pder{L}{z}\pder{L}{\dot{q}}
