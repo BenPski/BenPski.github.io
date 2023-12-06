@@ -38,6 +38,13 @@ main = hakyllWith deployConfig $ do
             >>= loadAndApplyTemplate "templates/default.html" postCtx
             >>= relativizeUrls
 
+    match "projects/**" $ do
+        route $ setExtension "html"
+        compile $ pandocMathCompiler
+            >>= loadAndApplyTemplate "templates/projects.html" defaultContext
+            >>= loadAndApplyTemplate "templates/default.html" defaultContext
+            >>= relativizeUrls
+
     match "notes/**" $ do
         route $ setExtension "html"
         compile $ pandocMathCompiler
@@ -45,12 +52,24 @@ main = hakyllWith deployConfig $ do
             >>= loadAndApplyTemplate "templates/default.html" defaultContext
             >>= relativizeUrls
 
+
     create ["notes.html"] $ do
         route idRoute
         compile $ do
             hier <- buildHier "notes/**"
             let ctxs = hierarchyContext hier
                 ctx = constField "title" "Notes" `mappend` defaultContext
+            makeItem ""
+              >>= templateHierarchyFold ctxs
+              >>= loadAndApplyTemplate "templates/default.html" ctx
+              >>= relativizeUrls
+
+    create ["projects.html"] $ do
+        route idRoute
+        compile $ do
+            hier <- buildHier "projects/**"
+            let ctxs = hierarchyContext hier
+                ctx = constField "title" "Projects" `mappend` defaultContext
             makeItem ""
               >>= templateHierarchyFold ctxs
               >>= loadAndApplyTemplate "templates/default.html" ctx

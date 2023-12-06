@@ -106,7 +106,7 @@ $$
 \theta'' = -\alpha\sin(\theta)
 $$
 
-To rewrite this into first-order form we can substitute $x_0$ for $\theta$ and $\x_1$ for $\theta'$ which will give:
+To rewrite this into first-order form we can substitute $x_0$ for $\theta$ and $x_1$ for $\theta'$ which will give:
 
 $$
 x_0' = x_1 \\

@@ -17,11 +17,15 @@ Now, we notice that $SE(3)$ is a Lie group and can therefore evaluate the deriva
 \begin{equation}
 \frac{\partial}{\partial s_i} g = g\hat{\xi}_i
 \end{equation}
-where $\hat{\xi}_i\in se(3)$ is the Lie algebra element of $se(3)$ along the i-th spatial parameter. Here $\hat$ represents the isomorphism from $\mathbb{R}^6$ to $se(3)$ as all Lie algebras have both a vector and matrix representation (not quite, there are more abstract representations of Lie groups and algebras). 
+where $\hat{\xi}_i\in se(3)$ is the Lie algebra element of $se(3)$ along the i-th spatial parameter. Here $\hat{.}$ represents the isomorphism from $\mathbb{R}^6$ to $se(3)$ as all Lie algebras have both a vector and matrix representation (not quite, there are more abstract representations of Lie groups and algebras). 
 \begin{gather}
-\xi = \begin{bmatrix} \omega_1 \\ \omega_2 \\ \omega_3 \\ \nu_1 \\ \nu_2 \\ \nu_3 \end{bmatrix} \\
-\hat{\xi} = 
+\xi = \begin{bmatrix} \omega \\ \nu \end{bmatrix} = \begin{bmatrix} \omega_1 \\ \omega_2 \\ \omega_3 \\ \nu_1 \\ \nu_2 \\ \nu_3 \end{bmatrix} \\
+\hat{\xi} = \begin{bmatrix} \hat{\omega} & \nu \\ 0 & 1 \end{bmatrix} \\ 
 \end{gather}
+where $\hat{\omega}$ is overloading the $\hat{.}$ operator for $so(3)$. $so(3)$'s operator is then:
+\begin{equation}
+\hat{\omega} = \begin{bmatrix} 0 & -\omega_3 & \omega_2 \\ \omega_3 & 0 & -\omega_1 \\ -\omega_2 & \omega_1 & 0 \end{bmatrix} \\
+\end{equation}
 
 Borrowing some terminology from Screw theory, we call the Lie group elements the configuration or displacement and the Lie algebra elements the twists. In Screw theory twist refers specifically to a generalized velocity (both angular and linear combined); however, we now have twists not just defined by the time derivative so they'll be referred to as spatial and temporal twists. With the mention of the temporal twist we also have:
 \begin{equation}
