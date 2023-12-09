@@ -18,7 +18,7 @@ deployConfig = defaultConfiguration {deployCommand =  "git stash && git checkout
 main :: IO ()
 main = hakyllWith deployConfig $ do
     match "images/*" $ do
-        route   idRoute
+        route idRoute
         compile copyFileCompiler
 
     match "css/*" $ do
