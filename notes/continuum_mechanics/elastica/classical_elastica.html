@@ -8,23 +8,21 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
     </head>
     <body>
-        <div id="header">
-            <div id="logo">
-                <a href="../../../">BenPski</a>
-            </div>
-            <div id="navigation">
-                <a href="../../../">Home</a>
-                <a href="../../../about.html">About</a>
-<!--                <a href="/contact.html">Contact</a>-->
-                <a href="../../../archive.html">Archive</a>
-                <a href="../../../notes.html">Notes</a>
-            </div>
+      <div id="navigation">
+        <div id="navigation-internal">
+        <h1>Stuff</h1>
+        <a href="../../../">Home</a>
+        <a href="../../../notes.html">Notes</a>
+        <a href="../../../projects.html">Projects</a>
+        <h1>Links</h1>
+        <a href="github.com/BenPski">GitHub</a>
         </div>
+      </div>
+      <div id="content">
+        <div id="content-container">
+          <h1>Classical Elastica</h1>
 
-        <div id="content">
-            <h1>Classical Elastica</h1>
-
-            <span style="width:100%">
+          <span style="width:100%">
     
     
 </span>
@@ -35,7 +33,8 @@
 <p><span class="math display">\[
 x' = -\sin(\theta) \\
 y' = \cos(\theta)
-\]</span> where <span class="math inline">\('\)</span> denotes the derivative with respect to <span class="math inline">\(s\)</span>. This is all the kinematics we need for the elastica.</p>
+\]</span>
+where <span class="math inline">\('\)</span> denotes the derivative with respect to <span class="math inline">\(s\)</span>. This is all the kinematics we need for the elastica.</p>
 <p>To balance the loads on the elastica we have two loads: the internal bending stiffness, and the moment due to the hanging weight. For the internal bending stiffness we have the moment <span class="math inline">\(M = K\theta'\)</span> where <span class="math inline">\(K\)</span> is the bending stiffness and <span class="math inline">\(\theta'\)</span> is the bending curvature, typically <span class="math inline">\(K = EI\)</span> where <span class="math inline">\(E\)</span> is the Young’s modulus and <span class="math inline">\(I\)</span> is the second moment of area for the cross sections of the rod. The moment due to the hanging weight is <span class="math inline">\(M = (x(s)-x(L))mg\)</span> where <span class="math inline">\(m\)</span> is the mass of the hanging weight and <span class="math inline">\(g\)</span> is the gravitational acceleration. Setting these equal to each other gives:</p>
 <p><span class="math display">\[
 K\theta' = (x(s)-x(L))mg
@@ -81,7 +80,8 @@ K\theta'' = -mg\sin(\theta)
 <p>To get into the desired form define a new angle <span class="math inline">\(2\gamma = \theta\)</span> and do some rearranging to get:</p>
 <p><span class="math display">\[
 1 = \frac{1}{A}\int_0^{\phi/2}\frac{d\gamma}{1-B\sin(\gamma)^2}
-\]</span> where <span class="math inline">\(A = \frac{1}{\sqrt{\beta}}\sin(\phi/2)\)</span> and <span class="math inline">\(B = \frac{1}{\sin(\phi/2)^2}\)</span>. Which is the form of the elliptic integral of the first kind. There are different forms and notations used for elliptic integrals, but I don’t want to manipulate them anymore.</p>
+\]</span>
+where <span class="math inline">\(A = \frac{1}{\sqrt{\beta}}\sin(\phi/2)\)</span> and <span class="math inline">\(B = \frac{1}{\sin(\phi/2)^2}\)</span>. Which is the form of the elliptic integral of the first kind. There are different forms and notations used for elliptic integrals, but I don’t want to manipulate them anymore.</p>
 <h1 id="solving">Solving</h1>
 <p>To actually solve this numerically you can either solve the elliptic equation or just use the ODE definition and integrate that in standard ways. I think the most straightforward way is to solve the ODE as a boundary value problem (BVP), at the base we know <span class="math inline">\(\theta(0) = 0\)</span>, at the tip we know <span class="math inline">\(\theta(L)' = 0\)</span>, and we have a second order differential equation <span class="math inline">\(\theta'' = \alpha\sin(\theta)\)</span> describing the system. That is an easy way to pose the problem, but BVPs can be slightly tricky to actually solve due to most numerical processes solving initial value problems (IVP). There are many ways to do this (pseudospectral, galerkin, shooting, etc.) and here I’ll show how to use a shooting method.</p>
 <p>For using a shooting method we use an IVP solver to integrate the ODEs using a guessed value for the unknown initial conditions,check that the known boundary conditions at the other side of the domain are satisfied, if they aren’t update the guess and repeat. This is essentially an IVP solver wrapped in a root-finding method.</p>
@@ -94,19 +94,22 @@ x_{i+1} = x_i + \Delta tf(x_i,t)
 <p><span class="math display">\[
 \theta'' = -\alpha\sin(\theta)
 \]</span></p>
-<p>To rewrite this into first-order form we can substitute <span class="math inline">\(x_0\)</span> for <span class="math inline">\(\theta\)</span> and <span class="math inline">\(\x_1\)</span> for <span class="math inline">\(\theta'\)</span> which will give:</p>
+<p>To rewrite this into first-order form we can substitute <span class="math inline">\(x_0\)</span> for <span class="math inline">\(\theta\)</span> and <span class="math inline">\(x_1\)</span> for <span class="math inline">\(\theta'\)</span> which will give:</p>
 <p><span class="math display">\[
 x_0' = x_1 \\
 x_1' = -\alpha\sin(x_0)
-\]</span> which is now in first-order form. Allowing us to write the use the integrator for the elastica problem.</p>
+\]</span>
+which is now in first-order form. Allowing us to write the use the integrator for the elastica problem.</p>
 <p>Now root-finding has many techniques and huge amounts of work going into it, but the simplest method is general is Newton’s method. Newton’s method goes:</p>
 <p><span class="math display">\[
 x_{n+1} = x_n - \frac{f(x_n)}{f'(x_n)}
 \]</span></p>
 <p>where <span class="math inline">\(f'\)</span> is the derivative of <span class="math inline">\(f\)</span>. Given a close enough initial guess this should converge to the root of <span class="math inline">\(f\)</span>. An issue arises when <span class="math inline">\(f'\)</span> is unavailable or inconvenient to compute. Several methods are available to deal with this, two simple methods are approximate the derivatives by finite differences and the secant method. The secant method approximates the derivative by the last two points visited while finite differences approximate the derivative by small perturbations in the input. Here I’m going to use finite differences to get better derivative information.</p>
-<p>The finite difference approximation is: <span class="math display">\[
+<p>The finite difference approximation is:
+<span class="math display">\[
 f'(x_n) = (f(x_n + \epsilon) - f(x_n))/\epsilon
-\]</span> where $is some small value (e.g., $110^{-5}). Substituting this into the Newton iteration we get:</p>
+\]</span>
+where $is some small value (e.g., $1^{-5}). Substituting this into the Newton iteration we get:</p>
 <p><span class="math display">\[
 x_{n+1} = x_n - \epsilon\frac{f(x_n)}{f(x_n+\epsilon) - f(x_n)}
 \]</span></p>
@@ -117,9 +120,11 @@ x_{n+1} = x_n - \epsilon\frac{f(x_n)}{f(x_n+\epsilon) - f(x_n)}
 </div>
 
         </div>
-        <div id="footer">
-            Site proudly generated by
-            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </div>
+      <div id="footer">
+        <div id="footer-text">
+          Site proudly generated by <a href="http://jaspervdj.be/hakyll">Hakyll</a>
         </div>
+      </div>
     </body>
 </html>

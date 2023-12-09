@@ -8,23 +8,21 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
     </head>
     <body>
-        <div id="header">
-            <div id="logo">
-                <a href="../../">BenPski</a>
-            </div>
-            <div id="navigation">
-                <a href="../../">Home</a>
-                <a href="../../about.html">About</a>
-<!--                <a href="/contact.html">Contact</a>-->
-                <a href="../../archive.html">Archive</a>
-                <a href="../../notes.html">Notes</a>
-            </div>
+      <div id="navigation">
+        <div id="navigation-internal">
+        <h1>Stuff</h1>
+        <a href="../../">Home</a>
+        <a href="../../notes.html">Notes</a>
+        <a href="../../projects.html">Projects</a>
+        <h1>Links</h1>
+        <a href="github.com/BenPski">GitHub</a>
         </div>
+      </div>
+      <div id="content">
+        <div id="content-container">
+          <h1>Lagrangian Mechanics</h1>
 
-        <div id="content">
-            <h1>Lagrangian Mechanics</h1>
-
-            <span style="width:100%">
+          <span style="width:100%">
     
     
 </span>
@@ -35,19 +33,25 @@
 \newcommand{\firstVary}[1]{\der{}{\epsilon} #1 \rvert_{\epsilon=0}}
 \]</span></p>
 <p>One of the first systematic approaches to modeling physical systems and one that is commonly built off of for other physics models is Lagrangian mechanics. Now the most common way of deriving Lagrangian mechanics is from <a href="hamilton-principle.html">Hamilton’s principle</a>, but considering it was developed prior to Hamilton’s principle it motivates a different approach to deriving the equations. However, I don’t know one off the top of my head and don’t feel like figuring one out, but the equations of motion from Lagrangian mechanics are the same as predicted by Newtonian mechanics and is often easier to use. The drawback is non-conservative forces generally cannot be modelled unless we modify the theory with D’Alembert’s principle (The principle of virtual work) to incorporate the non-conservative forces.</p>
-<p>Briefly, Hamilton’s principle states that the action (time integral of the Lagrangian of a system) is stationary for the dynamic path. Posing this mathematically will give us the Euler-Lagrange equations: <span class="math display">\[
+<p>Briefly, Hamilton’s principle states that the action (time integral of the Lagrangian of a system) is stationary for the dynamic path. Posing this mathematically will give us the Euler-Lagrange equations:
+<span class="math display">\[
     \der{}{t}\pder{L}{\dot{q}} = \pder{L}{q}
-\]</span> where <span class="math inline">\(L(q,\dot{q},t)\)</span> is the Lagrangian of the system, <span class="math inline">\(q\)</span> are the generalized coordinates of the system, and <span class="math inline">\(\dot{q}\)</span> are the generalized velocities.</p>
-<p>The Lagrangian is a very general function and can be applied to fields outside of physics, but for physical systems it is typically written in terms of the kinetic, <span class="math inline">\(T\)</span>, and potential energy, <span class="math inline">\(U\)</span>. <span class="math display">\[
+\]</span>
+where <span class="math inline">\(L(q,\dot{q},t)\)</span> is the Lagrangian of the system, <span class="math inline">\(q\)</span> are the generalized coordinates of the system, and <span class="math inline">\(\dot{q}\)</span> are the generalized velocities.</p>
+<p>The Lagrangian is a very general function and can be applied to fields outside of physics, but for physical systems it is typically written in terms of the kinetic, <span class="math inline">\(T\)</span>, and potential energy, <span class="math inline">\(U\)</span>.
+<span class="math display">\[
     L = T - U
 \]</span></p>
-<p>For a particle the kinetic energy is: <span class="math display">\[
+<p>For a particle the kinetic energy is:
+<span class="math display">\[
     T = \frac{1}{2} m \dot{q}^2
 \]</span></p>
-<p>Then assuming <span class="math inline">\(U\)</span> is purely a function of <span class="math inline">\(q\)</span> we can substitute into the Euler-Lagrange equations to get: <span class="math display">\[
+<p>Then assuming <span class="math inline">\(U\)</span> is purely a function of <span class="math inline">\(q\)</span> we can substitute into the Euler-Lagrange equations to get:
+<span class="math display">\[
     \der{}{t}m\dot{q} = \pder{U}{q}
 \]</span></p>
-<p>When <span class="math inline">\(U\)</span> is a conservative force we have <span class="math inline">\(\pder{U}{q} = F\)</span> and we get: <span class="math display">\[
+<p>When <span class="math inline">\(U\)</span> is a conservative force we have <span class="math inline">\(\pder{U}{q} = F\)</span> and we get:
+<span class="math display">\[
     m\ddot{q} = F
 \]</span></p>
 <p>or the classic <span class="math inline">\(F = ma\)</span> from Newtonian mechanics.</p>
@@ -55,19 +59,24 @@
 <h1 id="non-uniqueness-of-the-lagrangian">Non-Uniqueness of the Lagrangian</h1>
 <p>For a given set of equations of motion there exists infinitely many Lagrangians that can describe the system and therefore the Lagrangian is not unique for the system. There are 3 types of modifications that can be made to a Lagrangian that will give the same equations of motion. The proof of which is easiest when using Hamilton’s principle and variational calculus.</p>
 <h2 id="multiplying-by-a-scalar">Multiplying by a scalar</h2>
-<p>For the original system we have: <span class="math display">\[
+<p>For the original system we have:
+<span class="math display">\[
     S = \int_0^\tau L(q,\dot{q},t) dt
 \]</span></p>
-<p>Now if we obtain a new Lagrangian by multiplying by a scalar, <span class="math inline">\(\lambda\)</span>, we have: <span class="math display">\[
+<p>Now if we obtain a new Lagrangian by multiplying by a scalar, <span class="math inline">\(\lambda\)</span>, we have:
+<span class="math display">\[
     S' = \int_0^\tau \lambda L(q, \dot{q},t) dt
 \]</span></p>
-<p>Evaluating the variation of both actions we get: <span class="math display">\[
+<p>Evaluating the variation of both actions we get:
+<span class="math display">\[
     \delta(S) = \int_0^\tau \delta q (\pder{L}{q} - \der{}{t}\pder{L}{\dot{q}}) dt \\
     \delta(S') = \lambda\int_0^\tau \delta q (\pder{L}{q} - \der{}{t}\pder{L}{\dot{q}}) dt
 \]</span></p>
-<p>Given that the variation must be 0 to meet Hamilton’s principle we conclude from both equations that: <span class="math display">\[
+<p>Given that the variation must be 0 to meet Hamilton’s principle we conclude from both equations that:
+<span class="math display">\[
     \pder{L}{q} - \der{}{t}\pder{L}{\dot{q}} = 0
-\]</span> concluding that both describe the same system.</p>
+\]</span>
+concluding that both describe the same system.</p>
 <h2 id="addition-of-a-scalar">Addition of a scalar</h2>
 <p>Following a similar derivation, if we modify <span class="math inline">\(L\)</span> by adding a constant, <span class="math inline">\(\alpha\)</span>, the equations of motion should be the same.</p>
 <p><span class="math display">\[
@@ -75,10 +84,12 @@
 \]</span></p>
 <p>The variation of which again gives the same equations because the second term is 0 when taking the variation.</p>
 <h2 id="addition-of-a-time-derivative">Addition of a time derivative</h2>
-<p>Now the most interesting modification is to add a term like <span class="math inline">\(\der{}{t}F(q,t)\)</span>. The new action is: <span class="math display">\[
+<p>Now the most interesting modification is to add a term like <span class="math inline">\(\der{}{t}F(q,t)\)</span>. The new action is:
+<span class="math display">\[
     S' = \int_0^\tau (L(q,\dot{q},t) + \der{}{t}F(q,t)) dt = \int_0^\tau Ldt + F(q(\tau),\tau) - F(q(0), 0)
 \]</span></p>
-<p>If we take the variation of the new action we get: <span class="math display">\[
+<p>If we take the variation of the new action we get:
+<span class="math display">\[
     \delta(S') = \delta(S) + \delta(F(q(\tau),\tau) - F(q(0), 0))
 \]</span></p>
 <p>Then, when we take the variation we have to assure that the boundary conditions do not change meaning <span class="math inline">\(\delta q(0) = \delta q(\tau) = 0\)</span>. This makes the rightmost term is always 0 and therefore this modification does not influence the equations of motion.</p>
@@ -88,37 +99,48 @@
 <p><span class="math display">\[
     0 = \pder{L}{q} - \der{}{t}\pder{L}{\dot{q}}
 \]</span></p>
-<p>Now lets assume we have some new generalized coordinates: <span class="math display">\[
+<p>Now lets assume we have some new generalized coordinates:
+<span class="math display">\[
     Q = Q(q,t)
 \]</span></p>
-<p>If we then assume that this mapping is invertible we have: <span class="math display">\[
+<p>If we then assume that this mapping is invertible we have:
+<span class="math display">\[
     q = q(Q,t)
 \]</span></p>
-<p>The time derivative is then: <span class="math display">\[
+<p>The time derivative is then:
+<span class="math display">\[
     \dot{q} = \pder{q}{Q}\dot{Q} + \pder{q}{t}
 \]</span></p>
-<p>This also gives the relation: <span class="math display">\[
+<p>This also gives the relation:
+<span class="math display">\[
     \pder{\dot{q}}{\dot{Q}} = \pder{q}{Q}
 \]</span></p>
-<p>We can write the action as: <span class="math display">\[
+<p>We can write the action as:
+<span class="math display">\[
     S = \int_0^\tau L(q(Q,t), \pder{q}{Q}\dot{Q}) dt
 \]</span></p>
-<p>Thus Hamilton’s principle is: <span class="math display">\[
+<p>Thus Hamilton’s principle is:
+<span class="math display">\[
     \delta S = 0 = \der{}{\epsilon} \int_0^\tau L(q(Q+\epsilon \delta Q,t), \pder{q}{Q}(\dot{Q} + \epsilon \delta \dot{Q})) dt |_{\epsilon = 0}
 \]</span></p>
-<p>Simplifying gives us: <span class="math display">\[
+<p>Simplifying gives us:
+<span class="math display">\[
     0 = \int_0^\tau \pder{L}{q}\pder{q}{Q}\delta Q + \pder{L}{\dot{q}}\pder{p}{Q}\delta\dot{Q} dt
 \]</span></p>
-<p>We can substitute out <span class="math inline">\(\pder{q}{Q}\)</span> to get: <span class="math display">\[
+<p>We can substitute out <span class="math inline">\(\pder{q}{Q}\)</span> to get:
+<span class="math display">\[
     0 = \int_0^\tau \pder{q}{Q} (\pder{L}{q}\delta Q + \pder{L}{\dot{q}} \delta\dot{Q})dt
 \]</span></p>
-<p>Using integration by parts and the preservation of the boundary conditions we get: <span class="math display">\[
+<p>Using integration by parts and the preservation of the boundary conditions we get:
+<span class="math display">\[
     0 = \int_0^\tau \delta Q\pder{q}{Q}(\pder{L}{q} - \der{}{t}\pder{L}{\dot{q}}) dt
 \]</span></p>
-<p>Which gives us the same equation as before: <span class="math display">\[
+<p>Which gives us the same equation as before:
+<span class="math display">\[
     0 = \pder{L}{q} - \der{}{t}\pder{L}{\dot{q}}
 \]</span></p>
-<p>Since the variation was taken with respect to <span class="math inline">\(Q\)</span> this implies taking the derivatives with respect to either generalized coordinates will give the same mechanics so either: <span class="math display">\[\begin{gather}
+<p>Since the variation was taken with respect to <span class="math inline">\(Q\)</span> this implies taking the derivatives with respect to either generalized coordinates will give the same mechanics so either:
+<span class="math display">\[\begin{gather}
     0 = \pder{L}{q} - \der{}{t}\pder{L}{\dot{q}} \\
     0 = \pder{L}{Q} - \der{}{t}\pder{L}{\dot{Q}}
 \end{gather}\]</span></p>
@@ -131,22 +153,27 @@
 <p>Now the generalized coordinates <span class="math inline">\(q\)</span> are defined over every spatial point, <span class="math inline">\(s\)</span>, and the Lagrangian density <span class="math inline">\(\bar{L}\)</span> depends on the spatial derivative of <span class="math inline">\(q\)</span> as well. Now using Hamilton’s principle we have:</p>
 <p><span class="math display">\[
     S = \int_0^\tau\int \bar{L}(q, \dot{q}, \der{q}{s}) ds\,dt
-\]</span> as the action and</p>
+\]</span>
+as the action and</p>
 <p><span class="math display">\[
     \delta S = 0 = \der{}{\epsilon} \int \int \bar{L}(q+\epsilon \delta q, \dot{q} + \epsilon\dot{\delta q}, \der{q}{s} + \epsilon\der{}{s}\delta q) ds\,dt
-\]</span> as the variation of the action.</p>
-<p>Simplifying we have: <span class="math display">\[
+\]</span>
+as the variation of the action.</p>
+<p>Simplifying we have:
+<span class="math display">\[
     0 = \int\int \pder{\bar{L}}{q}\delta q + \pder{\bar{L}}{\dot{q}}\dot{\delta q} + \pder{\bar{L}}{\der{q}{s}}\der{\delta q}{s} ds\,dt
 \]</span></p>
 <p>Using integration by parts and intechanging the order of integration we get:</p>
 <p><span class="math display">\[
     0 = \int_0^\tau (\pder{\bar{L}}{\der{q}{s}}\delta q|_{s=0}^{1} + \int_0^1 \delta q (\pder{bar{L}}{q} - \der{}{t}\pder{\bar{L}}{\dot{q}} - \der{}{s}\pder{\bar{L}}{\der{q}{s}})ds)dt
-\]</span> where <span class="math inline">\(s\in[0, 1]\)</span> is assumed for the sake of specifying the boundary conditions and that <span class="math inline">\(\delta q(t=0) = \delta q(t=\tau) = 0\)</span>.</p>
+\]</span>
+where <span class="math inline">\(s\in[0, 1]\)</span> is assumed for the sake of specifying the boundary conditions and that <span class="math inline">\(\delta q(t=0) = \delta q(t=\tau) = 0\)</span>.</p>
 <p>Now, the variation on the boundary conditions for space depends on the problem. If the boundaries are fixed (e.g., the end is connected to a rigid wall) then the variations at the boundary are 0, but if the boundaries are free we do not have that restriction. In the fixed boundaries case we have:</p>
 <p><span class="math display">\[
     0 = \int\int \delta q (\pder{\bar{L}}{q} - \der{}{t}\pder{\bar{L}}{\dot{q}} - \der{}{s}\pder{\bar{L}}{\der{q}{s}})ds\,dt
 \]</span></p>
-<p>It can be easily seen that this implies: <span class="math display">\[
+<p>It can be easily seen that this implies:
+<span class="math display">\[
     0 = \pder{\bar{L}}{q} - \der{}{t}\pder{\bar{L}}{\dot{q}} - \der{}{s}\pder{\bar{L}}{\der{q}{s}}
 \]</span></p>
 <p>or the Euler-Lagrange equations over a one-dimensional field.</p>
@@ -155,16 +182,20 @@
     0 = \pder{\bar{L}}{q} - \der{}{t}\pder{\bar{L}}{\dot{q}} - \der{}{s}\pder{\bar{L}}{\der{q}{s}} \\
     \pder{\bar{L}}{\der{q}{s}}(s=0) = a \\
     \pder{\bar{L}}{\der{q}{s}}(s=1) = b \\
-\end{gather}\]</span> where <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span> are the boundary conditions.</p>
-<p>Now this idea can be extended to dependence on higher order derivatives and integration which will generally look like: <span class="math display">\[
+\end{gather}\]</span>
+where <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span> are the boundary conditions.</p>
+<p>Now this idea can be extended to dependence on higher order derivatives and integration which will generally look like:
+<span class="math display">\[
     0 = \pder{\bar{L}}{q} - \der{}{t}\pder{\bar{L}}{\dot{q}} - \sum_i \frac{d^i}{ds^i} \pder{\bar{L}}{\frac{d^iq}{ds^i}}
 \]</span></p>
 </div>
 
         </div>
-        <div id="footer">
-            Site proudly generated by
-            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </div>
+      <div id="footer">
+        <div id="footer-text">
+          Site proudly generated by <a href="http://jaspervdj.be/hakyll">Hakyll</a>
         </div>
+      </div>
     </body>
 </html>

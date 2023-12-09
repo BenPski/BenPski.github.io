@@ -8,23 +8,21 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
     </head>
     <body>
-        <div id="header">
-            <div id="logo">
-                <a href="../../">BenPski</a>
-            </div>
-            <div id="navigation">
-                <a href="../../">Home</a>
-                <a href="../../about.html">About</a>
-<!--                <a href="/contact.html">Contact</a>-->
-                <a href="../../archive.html">Archive</a>
-                <a href="../../notes.html">Notes</a>
-            </div>
+      <div id="navigation">
+        <div id="navigation-internal">
+        <h1>Stuff</h1>
+        <a href="../../">Home</a>
+        <a href="../../notes.html">Notes</a>
+        <a href="../../projects.html">Projects</a>
+        <h1>Links</h1>
+        <a href="github.com/BenPski">GitHub</a>
         </div>
+      </div>
+      <div id="content">
+        <div id="content-container">
+          <h1>Herglotz Variational Principle</h1>
 
-        <div id="content">
-            <h1>Herglotz Variational Principle</h1>
-
-            <span style="width:100%">
+          <span style="width:100%">
     
     
 </span>
@@ -35,22 +33,28 @@
 \newcommand{\pder}[2]{\frac{\partial#1}{\partial#2}}  
 \]</span></p>
 <p>In many mechanics formalisms it is assumed that the systems being analyzed are conservative and non-conservative phenomena ends up being included later, but what if the systems were assumed non-conservative from the start? Herglotz’ Variational Principle is similar to <a href="hamilton-principle.html">Hamilton’s Principle</a> (HP) and shares a similar relationship to the Euler-Lagrange equations except for the ability to have dissipative systems.</p>
-<p>Like in HP we being with a Lagrangian for the system <span class="math inline">\(L(q,\dot{q})\)</span> except we modify it to be potentially non-conservative. In order for the system to be non-conservative the Lagrangian must change in time. To introduce this behavior assume a dissipative Lagrangian of the form: <span class="math display">\[
+<p>Like in HP we being with a Lagrangian for the system <span class="math inline">\(L(q,\dot{q})\)</span> except we modify it to be potentially non-conservative. In order for the system to be non-conservative the Lagrangian must change in time. To introduce this behavior assume a dissipative Lagrangian of the form:
+<span class="math display">\[
 \dot{z} = L(q,\dot{q},z)
 \]</span></p>
 <p>Now for the system we are looking for the extremal of the functional <span class="math inline">\(z(q,t)\)</span> instead of the action of the system as in Hamilton’s principle. <span class="math inline">\(z\)</span> and the action are very similar. So, we are looking for <span class="math inline">\(\vary{z} = 0\)</span>.</p>
-<p>First, we take the variation of the differential equation: <span class="math display">\[
+<p>First, we take the variation of the differential equation:
+<span class="math display">\[
 \dot{\vary{z}} = \pder{L}{q}\delta q + \pder{L}{\dot{q}}\dot{\delta q} + \pder{L}{z}\vary{z}
 \]</span></p>
-<p>Now the solution to this equation for <span class="math inline">\(\vary{z}\)</span> is: <span class="math display">\[
+<p>Now the solution to this equation for <span class="math inline">\(\vary{z}\)</span> is:
+<span class="math display">\[
 \vary{z}\exp(-\int_0^t \pder{L}{z}ds) = \int (\pder{L}{q}\delta q + \pder{L}{\dot{q}}\dot{\delta q})\exp(-\int_0^t\pder{L}{z}ds)dt
 \]</span></p>
-<p>We can use integration by parts and the unperturbed boundary conditions on the right hand side to get: <span class="math display">\[
+<p>We can use integration by parts and the unperturbed boundary conditions on the right hand side to get:
+<span class="math display">\[
 0 = \vary{z}\exp(-\int \pder{L}{z}dt) = \int \delta q\exp(-\int\pder{L}{z}dt)(\pder{L}{q} - \der{}{t}\pder{L}{\dot{q}} + \pder{L}{z}\pder{L}{\dot{q}})dt
 \]</span></p>
-<p>Which since the variation of <span class="math inline">\(q\)</span> must be arbitrary we have: <span class="math display">\[
+<p>Which since the variation of <span class="math inline">\(q\)</span> must be arbitrary we have:
+<span class="math display">\[
 0 = \pder{L}{q} - \der{}{t}\pder{L}{\dot{q}} + \pder{L}{z}\pder{L}{\dot{q}}
-\]</span> as the generalized Lagrange equations.</p>
+\]</span>
+as the generalized Lagrange equations.</p>
 <p>We can see that if <span class="math inline">\(L\)</span> is independent of <span class="math inline">\(z\)</span> then we simply have the original Lagrange equations.</p>
 <p>Both the variational principle and the Lagrange equations are extensions of the more typical forms to non-conservative systems.</p>
 <h1 id="simple-example">Simple Example</h1>
@@ -61,7 +65,8 @@ m\ddot{q} + b\dot{q} + kq = 0
 <p>Since we know the Lagrangian comes from kinetic and potential energy we can guess the form as:</p>
 <p><span class="math display">\[
 L = \frac{1}{2}m\dot{q}^2 - \frac{1}{2}kq^2 + \alpha z
-\]</span> where <span class="math inline">\(\alpha\)</span> is a coefficient to be determined.</p>
+\]</span>
+where <span class="math inline">\(\alpha\)</span> is a coefficient to be determined.</p>
 <p>Using the dissipative Lagrange equations we get:</p>
 <p><span class="math display">\[
 -kq -m\ddot{q} + \alpha m\dot{q} = 0
@@ -73,9 +78,11 @@ L = \frac{1}{2}m\dot{q}^2 - \frac{1}{2}kq^2 - \frac{b}{m} z
 </div>
 
         </div>
-        <div id="footer">
-            Site proudly generated by
-            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </div>
+      <div id="footer">
+        <div id="footer-text">
+          Site proudly generated by <a href="http://jaspervdj.be/hakyll">Hakyll</a>
         </div>
+      </div>
     </body>
 </html>

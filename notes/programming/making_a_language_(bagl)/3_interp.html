@@ -8,23 +8,21 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
     </head>
     <body>
-        <div id="header">
-            <div id="logo">
-                <a href="../../../">BenPski</a>
-            </div>
-            <div id="navigation">
-                <a href="../../../">Home</a>
-                <a href="../../../about.html">About</a>
-<!--                <a href="/contact.html">Contact</a>-->
-                <a href="../../../archive.html">Archive</a>
-                <a href="../../../notes.html">Notes</a>
-            </div>
+      <div id="navigation">
+        <div id="navigation-internal">
+        <h1>Stuff</h1>
+        <a href="../../../">Home</a>
+        <a href="../../../notes.html">Notes</a>
+        <a href="../../../projects.html">Projects</a>
+        <h1>Links</h1>
+        <a href="github.com/BenPski">GitHub</a>
         </div>
+      </div>
+      <div id="content">
+        <div id="content-container">
+          <h1>Lambda Calculus: Simple Interpretation</h1>
 
-        <div id="content">
-            <h1>Lambda Calculus: Simple Interpretation</h1>
-
-            <span style="width:100%">
+          <span style="width:100%">
     
     <div style="float:right"><a href="4_debruijn.html">Next</a></div>
     
@@ -38,79 +36,81 @@
     (\lambda x . M) N =&gt; [M | x \rightarrow N]
 \end{equation}\]</span></p>
 <p>Which states that in the expression <code>M</code> substitute all instances of the variable <code>x</code> with expression <code>N</code>. TO start we can add a substitution node to represent this idea to make sure it is working as intended.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">class</span> Subs(Expr):</a>
-<a class="sourceLine" id="cb1-2" title="2">    <span class="co">&quot;&quot;&quot;</span></a>
-<a class="sourceLine" id="cb1-3" title="3"><span class="co">    A substitution node</span></a>
-<a class="sourceLine" id="cb1-4" title="4"><span class="co">    [E | x -&gt; y]</span></a>
-<a class="sourceLine" id="cb1-5" title="5"><span class="co">    &quot;&quot;&quot;</span></a>
-<a class="sourceLine" id="cb1-6" title="6"></a>
-<a class="sourceLine" id="cb1-7" title="7">    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, expr, var, val):</a>
-<a class="sourceLine" id="cb1-8" title="8">        <span class="va">self</span>.expr <span class="op">=</span> expr</a>
-<a class="sourceLine" id="cb1-9" title="9">        <span class="va">self</span>.var <span class="op">=</span> var</a>
-<a class="sourceLine" id="cb1-10" title="10">        <span class="va">self</span>.val <span class="op">=</span> val</a>
-<a class="sourceLine" id="cb1-11" title="11"></a>
-<a class="sourceLine" id="cb1-12" title="12">    <span class="kw">def</span> accept(<span class="va">self</span>, visitor):</a>
-<a class="sourceLine" id="cb1-13" title="13">        <span class="cf">return</span> visitor.visitSubs(<span class="va">self</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Subs(Expr):</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;&quot;&quot;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">    A substitution node</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">    [E | x -&gt; y]</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">    &quot;&quot;&quot;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, expr, var, val):</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.expr <span class="op">=</span> expr</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.var <span class="op">=</span> var</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.val <span class="op">=</span> val</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> accept(<span class="va">self</span>, visitor):</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> visitor.visitSubs(<span class="va">self</span>)</span></code></pre></div>
 <p>Then we can add the relevant method to <code>ExprVisitor</code> and define a printing method.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">def</span> visitSubs(<span class="va">self</span>, elem):</a>
-<a class="sourceLine" id="cb2-2" title="2">    <span class="cf">return</span> <span class="st">&quot;[ &quot;</span> <span class="op">+</span> <span class="va">self</span>(elem.expr) <span class="op">+</span> <span class="st">&quot; | &quot;</span> <span class="op">+</span> <span class="va">self</span>(elem.var) <span class="op">+</span> <span class="st">&quot; -&gt; &quot;</span> <span class="op">+</span> <span class="va">self</span>(elem.val) <span class="op">+</span> <span class="st">&quot; ]&quot;</span></a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> visitSubs(<span class="va">self</span>, elem):</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="st">&quot;[ &quot;</span> <span class="op">+</span> <span class="va">self</span>(elem.expr) <span class="op">+</span> <span class="st">&quot; | &quot;</span> <span class="op">+</span> <span class="va">self</span>(elem.var) <span class="op">+</span> <span class="st">&quot; -&gt; &quot;</span> <span class="op">+</span> <span class="va">self</span>(elem.val) <span class="op">+</span> <span class="st">&quot; ]&quot;</span></span></code></pre></div>
 <p>To actually make an interpreter to evaluate the lambda expressions we need to implement a new visitor. For a lazy language we can use weak head normal form (WHNF) evaluation to get the proper evaluation order. To start we just want to see the interpreter change the proper nodes to substitution and we will worry about doing actual substitution later. This leaves us:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><a class="sourceLine" id="cb3-1" title="1"></a>
-<a class="sourceLine" id="cb3-2" title="2"><span class="kw">class</span> ExprWHNF(ExprVisitor):</a>
-<a class="sourceLine" id="cb3-3" title="3">    <span class="co">&quot;&quot;&quot;</span></a>
-<a class="sourceLine" id="cb3-4" title="4"><span class="co">    Evaluate to weak head normal form</span></a>
-<a class="sourceLine" id="cb3-5" title="5"></a>
-<a class="sourceLine" id="cb3-6" title="6"><span class="co">    essentially if an apply can be done it should be done</span></a>
-<a class="sourceLine" id="cb3-7" title="7"><span class="co">    Apply(Lambda(blah), value) -&gt; substitute(blah.body, blah.head, value)</span></a>
-<a class="sourceLine" id="cb3-8" title="8"><span class="co">    &quot;&quot;&quot;</span></a>
-<a class="sourceLine" id="cb3-9" title="9"></a>
-<a class="sourceLine" id="cb3-10" title="10">    <span class="kw">def</span> visitVariable(<span class="va">self</span>, elem):</a>
-<a class="sourceLine" id="cb3-11" title="11">        <span class="cf">return</span> elem</a>
-<a class="sourceLine" id="cb3-12" title="12"></a>
-<a class="sourceLine" id="cb3-13" title="13">    <span class="kw">def</span> visitLambda(<span class="va">self</span>, elem):</a>
-<a class="sourceLine" id="cb3-14" title="14">        <span class="cf">return</span> elem</a>
-<a class="sourceLine" id="cb3-15" title="15"></a>
-<a class="sourceLine" id="cb3-16" title="16">    <span class="kw">def</span> visitApply(<span class="va">self</span>, elem):</a>
-<a class="sourceLine" id="cb3-17" title="17">        <span class="cf">if</span> <span class="bu">isinstance</span>(elem.left, Lambda):</a>
-<a class="sourceLine" id="cb3-18" title="18">            <span class="cf">return</span> <span class="va">self</span>(Subs(elem.left.body, elem.left.head, elem.right))</a>
-<a class="sourceLine" id="cb3-19" title="19">        <span class="cf">else</span>:</a>
-<a class="sourceLine" id="cb3-20" title="20">            <span class="cf">return</span> <span class="va">self</span>(Apply(<span class="va">self</span>(elem.left), elem.right))</a>
-<a class="sourceLine" id="cb3-21" title="21"></a>
-<a class="sourceLine" id="cb3-22" title="22">    <span class="kw">def</span> visitSubs(<span class="va">self</span>, elem):</a>
-<a class="sourceLine" id="cb3-23" title="23">        <span class="cf">return</span> elem</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> ExprWHNF(ExprVisitor):</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;&quot;&quot;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">    Evaluate to weak head normal form</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">    essentially if an apply can be done it should be done</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">    Apply(Lambda(blah), value) -&gt; substitute(blah.body, blah.head, value)</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co">    &quot;&quot;&quot;</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> visitVariable(<span class="va">self</span>, elem):</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> elem</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> visitLambda(<span class="va">self</span>, elem):</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> elem</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> visitApply(<span class="va">self</span>, elem):</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">isinstance</span>(elem.left, Lambda):</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="va">self</span>(Subs(elem.left.body, elem.left.head, elem.right))</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="va">self</span>(Apply(<span class="va">self</span>(elem.left), elem.right))</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> visitSubs(<span class="va">self</span>, elem):</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> elem</span></code></pre></div>
 <p>So, here we will just replace applications that can be evaluated with the proper substitution and go no further. We can do some simple tests to see this in action.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><a class="sourceLine" id="cb4-1" title="1">interp <span class="op">=</span> ExprWHNF()</a>
-<a class="sourceLine" id="cb4-2" title="2">printer <span class="op">=</span> ExprPrint()</a>
-<a class="sourceLine" id="cb4-3" title="3">x <span class="op">=</span> Variable(<span class="st">&quot;x&quot;</span>)</a>
-<a class="sourceLine" id="cb4-4" title="4">y <span class="op">=</span> Variable(<span class="st">&quot;y&quot;</span>)</a>
-<a class="sourceLine" id="cb4-5" title="5"><span class="bu">id</span> <span class="op">=</span> Lambda(x,x)</a>
-<a class="sourceLine" id="cb4-6" title="6">expr <span class="op">=</span> Apply(<span class="bu">id</span>,y)</a>
-<a class="sourceLine" id="cb4-7" title="7"><span class="bu">print</span>(printer(interp(expr)))</a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>interp <span class="op">=</span> ExprWHNF()</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>printer <span class="op">=</span> ExprPrint()</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> Variable(<span class="st">&quot;x&quot;</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> Variable(<span class="st">&quot;y&quot;</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="bu">id</span> <span class="op">=</span> Lambda(x,x)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>expr <span class="op">=</span> Apply(<span class="bu">id</span>,y)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(printer(interp(expr)))</span></code></pre></div>
 <p>which evaluates to:</p>
 <p><code>[ x | x -&gt; y ]</code></p>
 <p>as we should expect. We could try a more complex case, but it isn’t terribly interesting as this is a very basic transformation.</p>
 <p>Now we move onto actually evaluating a substitution node. For substitution we have a few things that can happen. First, if the expression is the same variable that is being substituted for then we do the substitution by replacing it with the new expression. If we encounter a lambda we simply move the substitution deeper into the body to continue looking for where the new expression should go. If we arrive at an apply node then we carry the substitution farther into both the left and right of the application. Then, if none of those matched we ran into a siuation where there is no substitution to do since everything has been exhausted therefore just give back the original body we were trying to substitute into. All further recursive calls should be handled as well.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><a class="sourceLine" id="cb5-1" title="1"><span class="kw">def</span> visitSubs(<span class="va">self</span>, elem):</a>
-<a class="sourceLine" id="cb5-2" title="2">    <span class="cf">if</span> <span class="bu">isinstance</span>(elem.expr, Variable):</a>
-<a class="sourceLine" id="cb5-3" title="3">        <span class="cf">if</span> elem.expr.s <span class="op">==</span> elem.var.s:</a>
-<a class="sourceLine" id="cb5-4" title="4">            <span class="cf">return</span> <span class="va">self</span>(elem.val)</a>
-<a class="sourceLine" id="cb5-5" title="5">        <span class="cf">else</span>:</a>
-<a class="sourceLine" id="cb5-6" title="6">            <span class="cf">return</span> <span class="va">self</span>(elem.expr)</a>
-<a class="sourceLine" id="cb5-7" title="7">    <span class="cf">elif</span> <span class="bu">isinstance</span>(elem.expr, Lambda):</a>
-<a class="sourceLine" id="cb5-8" title="8">        <span class="cf">return</span> <span class="va">self</span>(Lambda(elem.expr.head, <span class="va">self</span>(Subs(elem.expr.body, elem.var, elem.val))))</a>
-<a class="sourceLine" id="cb5-9" title="9">    <span class="cf">elif</span> <span class="bu">isinstance</span>(elem.expr, Apply):</a>
-<a class="sourceLine" id="cb5-10" title="10">        <span class="cf">return</span> <span class="va">self</span>(Apply(<span class="va">self</span>(Subs(elem.expr.left, elem.var, elem.val)),</a>
-<a class="sourceLine" id="cb5-11" title="11">                          <span class="va">self</span>(Subs(elem.expr.right, elem.var, elem.val))))</a>
-<a class="sourceLine" id="cb5-12" title="12">    <span class="cf">return</span> elem.expr</a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> visitSubs(<span class="va">self</span>, elem):</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">isinstance</span>(elem.expr, Variable):</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> elem.expr.s <span class="op">==</span> elem.var.s:</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="va">self</span>(elem.val)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="va">self</span>(elem.expr)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> <span class="bu">isinstance</span>(elem.expr, Lambda):</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span>(Lambda(elem.expr.head, <span class="va">self</span>(Subs(elem.expr.body, elem.var, elem.val))))</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> <span class="bu">isinstance</span>(elem.expr, Apply):</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span>(Apply(<span class="va">self</span>(Subs(elem.expr.left, elem.var, elem.val)),</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>                          <span class="va">self</span>(Subs(elem.expr.right, elem.var, elem.val))))</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> elem.expr</span></code></pre></div>
 <p>Running the previous example we no longer see the substitution node and get:</p>
 <p><code>(\x.x) y == y</code></p>
 <p>This all works fine for basic interpretations of lambda calculus; however, trying to write complex expressions becomes an issue due to shadowing of the names. We could make some adjustments to how equality is checked for variables, but it will be easier to convert to De Bruijn notation to eliminate variable names in the first place. This will be done in the next section.</p>
 </div>
 
         </div>
-        <div id="footer">
-            Site proudly generated by
-            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </div>
+      <div id="footer">
+        <div id="footer-text">
+          Site proudly generated by <a href="http://jaspervdj.be/hakyll">Hakyll</a>
         </div>
+      </div>
     </body>
 </html>

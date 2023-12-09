@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>BenPski - Partitions</title>
+        <link rel="stylesheet" type="text/css" href="../../css/default.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
+    </head>
+    <body>
+      <div id="navigation">
+        <div id="navigation-internal">
+        <h1>Stuff</h1>
+        <a href="../../">Home</a>
+        <a href="../../notes.html">Notes</a>
+        <a href="../../projects.html">Projects</a>
+        <h1>Links</h1>
+        <a href="github.com/BenPski">GitHub</a>
+        </div>
+      </div>
+      <div id="content">
+        <div id="content-container">
+          <h1>Partitions</h1>
+
+          <span style="width:100%">
+    
+    
+</span>
+<div style="display:inline-block">
+    <p>A partition is set where we split the set into subsets that do not overlap and
+their union forms the original set.</p>
+<p>If we have the set <span class="math inline">\(\{1,2,3\}\)</span> then the possible partitions are:</p>
+<p><span class="math display">\[
+\begin{gather}
+    [\{\{1\},\{2\},\{3\}\}] \\
+    [\{\{1,2\},\{3\}\}] \\
+    [\{\{1,3\},\{2\}\}] \\
+    [\{\{2,3\},\{1\}\}] \\
+    [\{\{1,2,3\}\}] \\
+\end{gather}
+\]</span></p>
+<p>It is also worth noting that a partition is closely related to an equivalence
+relation. Interpreting each element in a part as being equivelent gives rise to
+an equivalence relation and given an equivalence relation you can generate the
+parts of a partition.</p>
+<p>So, how to represent a partition as a data structure? Well the things we know
+are that a partition is a set of non-empty sets. The tricky bit is there are
+lots of different ways of constructing a partition. If we are given the original
+set then we have 4 options that I can think of:</p>
+<ul>
+<li>construct all possible partitions</li>
+<li>construct a canonical partition</li>
+<li>construct a random partition</li>
+<li>construct a partition according to an equivalence relation</li>
+</ul>
+<p>The other perspective for making a partition is to start with an emtpy partition
+and then start inserting into it. That gives 2 options:</p>
+<ul>
+<li>construct the partition from an already existing grouping of elements and then
+start inserting</li>
+<li>always start from an empty partition and then insert according to some
+equivalence relation</li>
+</ul>
+<p>The fundamental constructor that would be the easiest to work with is to go from
+some pre-grouped data to the parition. This should be the most flexible as all
+the other interesting constructions can be built from that fairly easily. This
+also eliminates the initial need for some notion of equality.</p>
+<p>For the actual implementation of the data need to pick something to be the
+collections. Vectors have the nice feature that you don’t need any assumptions
+about the data you are storing, but if I use actual sets then I get the proper
+quality of sets that they only have an particular element once. The set properties
+could be maintained by the exposed functions for working with a partition, but
+I don’t want to bother with that so I’m going to go with the underlying set
+implementation.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Partition<span class="op">&lt;</span>A<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    parts<span class="op">:</span> HashSet<span class="op">&lt;</span>HashSet<span class="op">&lt;</span>A<span class="op">&gt;&gt;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>However, after trying to implement something for this you’ll quickly realize
+that <code>HashSet</code> doesn’t implement <code>Hash</code> which prevents this from working. So,
+either I make a hashable set or go back to a vector based implementation. Either
+way I need to do something and I don’t think there is an obvious way to hash
+the <code>HashSet</code> or that would already exist.</p>
+<p>To get at the heart of the reason for hashing being needed and the problem we
+need to understand the underlying implementation. I don’t know the underlying
+implmentation lol, but I do know that the general idea to make things like
+key-value pairs and sets efficient is to use search trees as their backend
+implementation. This is because you usually want to ask something like “is <code>a</code>
+a member of <code>A</code>?” and to do that efficiently you don’t want to search every
+element in your data structure, you want to be able to reduce your search space
+and to do that you need to have some sort of ordered structure in the back.
+The simplest implementation is the binary search tree and generally it gets more
+specialized from there. The problem then arises for a set, how do you establish
+order between all sets in a satifactory way? The background assumption on search
+trees is that there is a total ordering on the keys or elements, but for sets
+that isn’t an obvious thing to implement without adding more structure like
+being inherently ordered.</p>
+<p>Luckily <code>collections</code> already implements <code>BTreeSet</code> which requires <code>Ord</code> so
+it can be hashed.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Partition<span class="op">&lt;</span>A<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    parts<span class="op">:</span> BTreeSet<span class="op">&lt;</span>BTreeSet<span class="op">&lt;</span>A<span class="op">&gt;&gt;,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>If I didn’t want to making these assumptions about the underlying data, I don’t
+need something high performance and the use cases I’m anticipating are: do
+something to every element and do a comparison between a new item and a single
+item in the collection. Which can be done with a vector.</p>
+<h2 id="construction">Construction</h2>
+<p>The construction goes: given a list of lists make the partition. So something
+like: <code>new([[1,2],[3,4]]) -&gt; {{1,2},{3,4}</code>. Which seems like a pretty
+straightforward translation. The exception is, nothing in the data structure
+is preventing a malformed partition so something like: <code>new([[1,2],[1,2,3]]) -&gt; {{1,2},{1,2,3}}</code> in the naive implementation of the constructor. So, need to
+implement some check for making sure elements aren’t shared between parts. The
+result should be something like: <code>new([[1,2],[1,2,3]]) -&gt; {{1,2},{3}}</code>. There
+isn’t a unique way to resolve it (e.g., it could have also been <code>{{1,2,3}}</code>, so
+I left it as the easiest way I could think to do it.</p>
+<p>Implementing the empty partition creation is trivial.</p>
+<p>Creating all partitions for an initial set is an interesting challenge. Looking
+at it for a while, what I came up with is:</p>
+<ul>
+<li>create all the paritions of a set one smaller than the given set</li>
+<li>mix in the the element that was left out from the previous step into the
+results of the previous step</li>
+</ul>
+<p>The mixing in is the interesting part where I think is best shown by an example.</p>
+<p>Starting with <code>[1,2,3]</code> split into <code>(1, [2,3])</code> and get all the partitions of
+<code>[2,3]</code>. Doing that by hand we get</p>
+<ul>
+<li><code>[[2],[3]]</code></li>
+<li><code>[[2,3]]</code></li>
+</ul>
+<p>so all partitions of <code>[2,3]</code> are <code>[[[2],[3]], [[2,3]]]</code>. Then to mix in the <code>1</code>
+for each element in the all paritions result do 2 things:</p>
+<ul>
+<li>add the 1 as a singleton set to the partition</li>
+<li>union {1} with each subset</li>
+</ul>
+<p>so this looks like:</p>
+<p>for <code>[[2],[3]]</code>:</p>
+<ul>
+<li><code>[[1],[2],[3]]</code></li>
+<li><code>[[1,2],[3]]</code></li>
+<li><code>[[2], [1,3]]</code></li>
+</ul>
+<p>for <code>[[2,3]]</code>:</p>
+<ul>
+<li><code>[[1],[2,3]]</code></li>
+<li><code>[[1,2,3]]</code></li>
+</ul>
+<p>putting these all together the partitions of <code>[1,2,3]</code> are:</p>
+<ul>
+<li><code>[[1],[2],[3]]</code></li>
+<li><code>[[1,2],[3]]</code></li>
+<li><code>[[2],[1,3]]</code></li>
+<li><code>[[1],[2,3]]</code></li>
+<li><code>[[1,2,3]]</code></li>
+</ul>
+<p>This way of generating all the paritions guarantees no overlaps and generates
+all the partitions, so I think that is probably a good enough implementation.</p>
+<h2 id="testing">Testing</h2>
+<p>In general with testing, I don’t actually want to be hard coding results that I
+expect and would much rather test the essence of things or do some randomized
+testing. The problem with that can be you always need 2+ ways of getting the
+answer or else you are just testing that your implementation is correct with
+your implementation. That is why people hard code results, the person is the
+second way.</p>
+<p>The things to get at are things like when generating all partitions we know that
+the total number will be the nth Bell number where n is the number of elements
+in the original set. So, if the original set is <code>[1,2,3]</code> then the total
+number of partitions created by the <code>all_partitions</code> method should be the
+third Bell number. This is an example of my preferred way of testing things,
+this property gives two ways to compute the same value (the total number of
+partitions), is easy to do this generically for some value so it can be randomized,
+and it lets you capture information about a large/abstract case that you wouldn’t
+want to write out by hand.</p>
+<p>The two other easy checks are when generating all partitions we know there must
+always be the partition with only one subset in it (all subsets considered equal)
+and the partition with only singleton sets (the equivalence relation is normal
+equality).</p>
+<p>There is some more granualar testing that could be done with Stirling numbers,
+but I think that is not necessary at least for the moment.</p>
+</div>
+
+        </div>
+      </div>
+      <div id="footer">
+        <div id="footer-text">
+          Site proudly generated by <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </div>
+      </div>
+    </body>
+</html>
