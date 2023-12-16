@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>BenPski - Soft Lock Picking: The Worst Bug Catcher Battle</title>
+        <link rel="stylesheet" type="text/css" href="../../css/default.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
+    </head>
+    <body>
+      <div id="navigation">
+        <div id="navigation-internal">
+        <h1>Stuff</h1>
+        <a href="../../">Home</a>
+        <a href="../../notes.html">Notes</a>
+        <a href="../../projects.html">Projects</a>
+        <h1>Links</h1>
+        <a href="https://github.com/BenPski">GitHub</a>
+        </div>
+      </div>
+      <div id="content">
+        <div id="content-container">
+          <h1>Soft Lock Picking: The Worst Bug Catcher Battle</h1>
+
+          <span style="width:100%">
+    
+    
+</span>
+<div style="display:inline-block">
+    <p>Doing some analysis for the scenario in <a href="https://www.youtube.com/watch?v=3DF8XOhsFyg">this video</a>.</p>
+<p>The situation is you have a Weezing at level 100 that just knows Explosion and
+the only thing you are able to do is fight a trainer with a level 9 Weedle.</p>
+<p>You need to be able to win the battle to escape the situation. So the question
+is: how likely are you to win the battle?</p>
+<h2 id="mechanics">Mechanics</h2>
+<p>As talked about in the video the only way to escape the battle is to win without
+ever using Explosion. To do that you’d need to rely on the disobedience and
+struggle mechanics.</p>
+<p><a href="https://bulbapedia.bulbagarden.net/wiki/Struggle_(move)">Struggle</a> is pretty
+straightforward, once all of a pokemon’s moves run out of PP
+they start using the move struggle. Struggle is a 50 base power move and in
+Generation 3 (the relevant generation to the video) does 1/4 recoil to the user.</p>
+<p>For <a href="https://bulbapedia.bulbagarden.net/wiki/Obedience#Generation_III_and_IV">disobedience</a>
+it is a bit more complicated, but in Generation 3 the gist is
+if a pokemon has a chance to disobey it will pick between:</p>
+<ul>
+<li>using the instructed move</li>
+<li>going to sleep</li>
+<li>doing confusion damage to itself</li>
+<li>doing nothing</li>
+</ul>
+<p>So what is being taken advantage of in this battle is Weezing disobeying in such
+a way that it never attacks and Weedle uses all of its moves until is Struggles
+itself to death.</p>
+<p>It is implicitly relevant everywhere, but computing <a href="https://bulbapedia.bulbagarden.net/wiki/Stat#Determination_of_stats">stats</a>
+and <a href="https://bulbapedia.bulbagarden.net/wiki/Damage#Generation_III">damage</a> are also very important to the whole situation.</p>
+<h3 id="important-equations-and-calculations">Important Equations and Calculations</h3>
+<p>Disobedience:</p>
+<pre><code>R1 = choose(0, 255)
+oCheck = (level + oCap) * R1/256
+if oCheck &gt;= oCap:
+    R2 = choose(0, 255)
+    dAction = (level + oCap)*R2/256
+    if dAction &lt; oCap:
+        pick_different_move
+    else:
+        R3 = choose(0, 255)
+        if R3 &lt; (level - oCap):
+            sleep
+        if R3 &lt; 2 * (level - oCap):
+            hit_self
+        else:
+            do_nothing
+else:
+    do_instructed</code></pre>
+<p>In the considered case <code>level = 100</code>, <code>oCap = 10</code>, and picking a different move
+amounts to doing nothing since Weezing only knows one move.</p>
+<p>Stats:</p>
+<p><span class="math display">\[
+\begin{gather}
+HP = \lfloor\frac{(2 * Base + IV + \lfloor\frac{EV}{4}\rfloor) * Level}{100}\rfloor + Level + 10 \\
+Stat = \lfloor (\lfloor \frac{(2 * Base + IV + \lfloor \frac{EV}{4} \rfloor)*Level}{100} \rfloor + 5) * Nature \rfloor
+\end{gather}
+\]</span></p>
+<p><span class="math inline">\(IV\)</span> ranges from 0 to 31, <span class="math inline">\(EV\)</span> ranges from 0 to 252, and <span class="math inline">\(Nature\)</span> is 0.9, 1, or 1.1.</p>
+<p>Damage:</p>
+<p><span class="math display">\[
+\begin{equation}
+((\frac{(\frac{2*Level}{5}+2)*Power * \frac{Attack}{Defense}}{50})*M1 + 2) * M2 * random
+\end{equation}
+\]</span></p>
+<p><span class="math inline">\(M1\)</span> is a collection of multipliers, <span class="math inline">\(M2\)</span> is another collection of multipliers,
+and <span class="math inline">\(random\)</span> is a value between 0.85 and 1. In this particular case <span class="math inline">\(M1\)</span> is 1
+and <span class="math inline">\(M2\)</span> is <span class="math inline">\(M2 = Critical * STAB * Type1 * Type2\)</span> (whether it was a critical
+hit, if the move has same type attack bonus, and resistance/weakness calcs).</p>
+<h2 id="simplified-and-inaccurate-solution">Simplified (and inaccurate) Solution</h2>
+<p>To restate the situation again.</p>
+<p>Weezing Lv 100:
+- Explosion (5 PP)</p>
+<p>vs</p>
+<p>Weedle Lv 9:
+- Poison Sting (35 PP)
+- String Shot (40 PP)</p>
+<p>Something pretty obvious is that Weezing’s Explosion will knock out Weedle, but
+lets do the calculations anyways as some examples of what is going on.</p>
+<p>What are Weedle’s stats? The relevant ones are HP and defense in this case since
+Explosion is a physical move.</p>
+<p>Weedle’s base HP is 40 and base defense is 30. We do happen to know the actual
+stats all trainer pokemon have [spreadsheet](https://docs.google.com/spreadsheets/d/1frqW2CeHop4o0NP6Ja_TAAPPkGIrvxkeQJBfyxFggyk/edit?usp=sharing],
+but lets pretend we don’t.</p>
+<p>Pretty easy to tell that the lowest stat is when there <span class="math inline">\(IV=0\)</span>, <span class="math inline">\(EV=0\)</span>, <span class="math inline">\(Nature=0.9\)</span>
+and the highest stat when <span class="math inline">\(IV=31\)</span>, <span class="math inline">\(EV=252\)</span>, and <span class="math inline">\(Nature=1.1\)</span>. So, Weedle’s
+stat range is:</p>
+<ul>
+<li>HP: 26 - 34</li>
+<li>Attack: 9 - 20</li>
+<li>Defense: 9 - 19</li>
+<li>Special Attack: 7 - 18</li>
+<li>Special Defense: 7 - 18</li>
+<li>Speed: 12 - 24</li>
+</ul>
+<p>Which falls in line with the spreadsheet</p>
+<p>The quick python code for this:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> hp <span class="op">=</span> <span class="kw">lambda</span> base, iv, ev, level: ( ((<span class="dv">2</span><span class="op">*</span>base<span class="op">+</span>iv<span class="op">+</span>(ev<span class="op">//</span><span class="dv">4</span>))<span class="op">*</span>level)<span class="op">//</span> <span class="dv">100</span>) <span class="op">+</span> level <span class="op">+</span> <span class="dv">10</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> stat <span class="op">=</span> <span class="kw">lambda</span> base, iv, ev, level, nature: math.floor(( ((<span class="dv">2</span><span class="op">*</span>base<span class="op">+</span>iv<span class="op">+</span>(ev<span class="op">//</span><span class="dv">4</span>))<span class="op">*</span>level)<span class="op">//</span> <span class="dv">100</span> <span class="op">+</span> <span class="dv">5</span>) <span class="op">*</span> nature)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> hp_range <span class="op">=</span> <span class="kw">lambda</span> base, level: (hp(base, <span class="dv">0</span>, <span class="dv">0</span>, level), hp(base, <span class="dv">31</span>, <span class="dv">252</span>, level))</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> stat_range <span class="op">=</span> <span class="kw">lambda</span> base, level: (stat(base, <span class="dv">0</span>, <span class="dv">0</span>, level, <span class="fl">0.9</span>), stat(base, <span class="dv">31</span>, <span class="dv">252</span>, level, <span class="fl">1.1</span>))</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> pokemon_ranges <span class="op">=</span> <span class="kw">lambda</span> level, hp, attack, defense, sp_attack, sp_defense, speed: [</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>... hp_range(hp, level)] <span class="op">+</span> [stat_range(val, level) <span class="cf">for</span> val <span class="kw">in</span> [attack, defense, sp_attack, sp_defense, speed]]</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> pokemon_ranges(<span class="dv">9</span>, <span class="dv">40</span>, <span class="dv">35</span>, <span class="dv">30</span>, <span class="dv">20</span>, <span class="dv">20</span>, <span class="dv">50</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>[(<span class="dv">26</span>, <span class="dv">34</span>), (<span class="dv">9</span>, <span class="dv">20</span>), (<span class="dv">9</span>, <span class="dv">19</span>), (<span class="dv">7</span>, <span class="dv">18</span>), (<span class="dv">7</span>, <span class="dv">18</span>), (<span class="dv">12</span>, <span class="dv">24</span>)]</span></code></pre></div>
+<p>Weezing’s ranges are then:</p>
+<ul>
+<li>HP: 240 - 334</li>
+<li>Attack: 166 - 306</li>
+<li>Defense: 220 - 372</li>
+<li>Special Attack: 157 - 295</li>
+<li>Special Defense: 130 - 262</li>
+<li>Speed: 112 - 240</li>
+</ul>
+<p>With these what is the range of damage Weezing’s Explosion will deal to Weedle?
+The minimum is going to be the highest defense Weedle, lowest attack Weezing,
+with a low random value, and no critical hit.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> damage <span class="op">=</span> <span class="kw">lambda</span> level, power, attack, defense, mult, r: math.floor(((((<span class="dv">2</span> <span class="op">*</span> level <span class="op">//</span> <span class="dv">5</span> <span class="op">+</span> <span class="dv">2</span>) <span class="op">*</span> power <span class="op">*</span> attack <span class="op">//</span> defense) <span class="op">//</span> <span class="dv">50</span>) <span class="op">+</span> <span class="dv">2</span>) <span class="op">*</span> mult <span class="op">*</span> r)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> damage(<span class="dv">100</span>, <span class="dv">250</span>, <span class="dv">166</span>, <span class="dv">19</span>, <span class="dv">1</span>, <span class="fl">0.85</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dv">1560</span></span></code></pre></div>
+<p>The minimum damage is 1560 HP, safe to say Weedle is getting knocked out.</p>
+<p>This is the gist of the calculations that would be done in the background, the
+extra though is the expected values of things like damage. There are 2 random
+values that influence the damage done, critical hits and the random multiplier.
+For this we can still represent things as ranges, but the problem is we can’t
+actually hit every value in the range if we just say the minimum and maximum, so
+a range is misleading. Simple example is the gap between a max random roll
+without a critical and a minimum roll with a critical can be quite large (in the
+above case it is 1836 vs 3121 damage). Representing every possible value is
+one alternative, but that is often overly tedious especially for high-level
+analysis. That is were the expected value or weighted average comes in, it gives
+a single representitive value for something that could take on many values.</p>
+<p>Back to the actual problem: how likely is it that Weezing can beat the Weedle?</p>
+<p>To simplify things lets say that Weezing can’t actually get knocked out by
+anything other than Explosion (aka has infinite HP). In practice Weezing can get
+knocked out by self-inflicted damage and the combined damage from Weedle’s Poison
+Sting and Struggle, but simplifying the problem like this will make the first pass
+of the analysis easier.</p>
+<p>So what do we want to know? We want Weedle to use all of it’s moves until it
+uses Struggle enough times to do enough recoil damage to knock itself out. This
+will tell us how many turns Weezing needs to not use Explosion. After that we can
+compute how likely it is for Weezing to not use Explosion for that many turns.</p>
+<p>To start Weedle has a total of 40 + 35 = 75 PP, so the battle will last 75 + the
+number of turns Weedle takes to Struggle.</p>
+<p>To determine the amount of damage Struggle does to Weedle we need to know how
+much it does to Weezing since it does 1/4 of whatever it did to Weezing back to
+itself.</p>
+<p>Since this is an exercise in worst cases let Weezing’s Defense be maxed out and
+Weedle’s Attack be the minimum. The damage is 2 HP, even with a critical hit it
+is 4 damage. In the best case it is also a max of 4 damage. That means Struggle
+will always do 1 damage to Weedle since recoil always does at least 1 damage.</p>
+<p>So, the number of turns the battle needs to last is 75 + Weedle’s HP. Weedle’s
+HP is 26 - 34, so we can say the worst case is 109 turns of not using Explosion.
+According to in-game data it is 26 HP so it is really 101 turns.</p>
+<p>For Weezing we need to know what will happen on any given turn. Every turn we
+are forced to select Explosion and then we roll the dice on disobedience. The
+things that can happen for disobedience are:</p>
+<ul>
+<li>use the move</li>
+<li>pick a different move (do nothing in this case)</li>
+<li>go to sleep</li>
+<li>hit itself (do nothing in this simplified case)</li>
+<li>do nothing</li>
+</ul>
+<p>The chances for these particular things are mostly based around random rolls
+between 0 and 255. The check is</p>
+<p><span class="math display">\[
+\frac{(100 + 10)*r}{256} \geq 10
+\]</span></p>
+<p>or</p>
+<p><span class="math display">\[
+r \geq \frac{2560}{110}
+\]</span></p>
+<p>for integers that is <span class="math inline">\(r \geq 23\)</span> which is a <span class="math inline">\(\frac{256-24}{256} = \frac{29}{32}\)</span>
+chance of happening.</p>
+<p>So, this amounts to:</p>
+<ul>
+<li><span class="math inline">\(\frac{29}{32}\)</span> disobeys
+<ul>
+<li><span class="math inline">\(\frac{3}{32}\)</span> uses a different move (does nothing)</li>
+<li><span class="math inline">\(\frac{29}{32}\)</span> does something else
+<ul>
+<li><span class="math inline">\(\frac{90}{256}\)</span> goes to sleep</li>
+<li><span class="math inline">\(\frac{90}{256}\)</span> damages itself (does nothing)</li>
+<li><span class="math inline">\(\frac{256-180}{256}\)</span> does nothing</li>
+</ul></li>
+</ul></li>
+<li><span class="math inline">\(\frac{3}{32}\)</span> uses explosion</li>
+</ul>
+<p>or in the considered case</p>
+<ul>
+<li><span class="math inline">\(\frac{3}{32}\)</span> uses explosion</li>
+<li><span class="math inline">\(\frac{29}{32}\frac{29}{32}\frac{45}{128}\)</span> goes to sleep</li>
+<li><span class="math inline">\(\frac{29}{32}(\frac{3}{32} + \frac{29}{32}(\frac{45}{128} + \frac{19}{64}))\)</span> does nothing</li>
+</ul>
+<p>The interesting thing is going to sleep because in Generation 3 a pokemon goes
+to sleep for 1 - 5 turns and because if you know what sleep state the pokemon is
+in you know the transition.</p>
+<p>We can choose to model the state of Weezing like:</p>
+<ul>
+<li>Alive</li>
+<li>Sleep 1</li>
+<li>Sleep 2</li>
+<li>Sleep 3</li>
+<li>Sleep 4</li>
+<li>Sleep 5</li>
+<li>Dead</li>
+</ul>
+<p>Then we know the chance to transition between any given state on a given turn.</p>
+<ul>
+<li>For the Dead state it will always transition to the Dead state</li>
+<li>For a Sleep state it will always transition to the next lowest sleep state
+except for Sleep 1 which transitions to Alive</li>
+<li>Alive then has a chance to move to any other state according to the calculated
+probabilities. Explosion -&gt; Dead, do nothing -&gt; Alive, goes to sleep -&gt; 20%
+chance to go to any Sleep state</li>
+</ul>
+<p>Using this model it is perfect for a Markov Chain. To use the Markov Chain we
+setup the transition matrix by putting the probabilites of moving from one state
+to another such that it goes row -&gt; column. Then exponentiate the matrix the
+number of iterations we care about (the number of turns in the battle) and extract
+the state we are interested in by multiplying by a vector representing the state.</p>
+<p>Since the matrix is small enough I’ll write it out:</p>
+<p><span class="math display">\[
+T = \begin{bmatrix}
+A &amp; S &amp; S &amp; S &amp; S &amp; S &amp; D \\
+1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
+0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
+0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
+0 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 \\
+0 &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 \\
+0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 1 \\
+\end{bmatrix}
+\]</span></p>
+<p>where <span class="math inline">\(D = \frac{3}{32}\)</span>, <span class="math inline">\(S = \frac{1}{5}(\frac{29}{32})^{2}\frac{45}{128}\)</span>,
+<span class="math inline">\(A =\frac{29}{32}(\frac{3}{32} + \frac{29}{32}(\frac{45}{128} + \frac{19}{64}))\)</span>.</p>
+<p>Then we can compute the likelihood of surving 109 turns by doing <span class="math inline">\(T^{109}\)</span>.</p>
+<p>Using <span class="math inline">\(a = [1,0,0,0,0,0]\)</span> and <span class="math inline">\(d = [0,0,0,0,0,0,1]\)</span> to represent the alive and
+dead state to extract the value of going from alive to dead. We get</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> a<span class="op">*</span>T<span class="op">**</span><span class="dv">109</span><span class="op">*</span>d.T</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>matrix([[<span class="fl">0.99532741</span>]])</span></code></pre></div>
+<p>a 99.5% chance to lose any given battle or a less than 0.5% chance to win.</p>
+<h2 id="more-accurate-solution">More Accurate Solution</h2>
+<p>As alluded to before, Weezing does take damage during the battle through
+self-inflicted damage and damage from Weedle’s Poison Sting and Struggle, so the
+inifinite health assumption is misleading as Weezing could faint from not using
+Explosion, but how does this effect the result?</p>
+<p>A caveat we want to consider here is that</p>
+<p>To start let’s see what the total damage Weedle will do. We know that it will
+do 35 Poison Stings and 34 Struggles. The base power of Poison Sting is 15 and
+<span class="math inline">\(M2=1.5*0.5*Critical\)</span> because it gets STAB and it is resisted by Weezing.</p>
+<p>Doing some brute force iterations it doesn’t matter if it is the weakest Weedle
+vs the strongest Weezing or the strongest Weedle vs the strongest Weezing, the
+expected value for Poison Sting damage is always 1.06640625. Which amounts to
+37.3 damage on average. For Struggle same deal the expected damage is always
+1.1875 which amounts to a total of 77.7 damage from all of Weedle’s attacks.</p>
+<h3 id="a-wild-anomally-appears">A wild anomally appears</h3>
+<p>Actually, checking this against an existing damage calculator my calculations
+don’t match. Luckily I happened to have an Emerald save around with a high level
+pokemon to test which is accurate. I have a Rayquaza at level 70 and can go to
+a route that has low level Poochyena. Poochyena will always use Tackle and
+Rayquaza can just use Rest. According to Pokemon Showdown’s calculator a crit
+can do 5 or 6 damage, while the calculation I was using will max out at 4. So,
+hanging around for a crit and tah-dah a crit and it does 5 damage, the above
+calculation is wrong, but why?</p>
+<p>Well, looking through the code I see that if the section of the equation
+<span class="math inline">\(\frac{(\frac{2 * Level}{5} + 2) * Power * \frac{A}{D}}{50}\)</span> has the extra
+condition that it must be at least one for physical moves. Updating the function
+to be:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> damage <span class="op">=</span> <span class="kw">lambda</span> level, power, attack, defense, mult, r: <span class="bu">max</span>(<span class="dv">1</span>,</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>...math.floor((<span class="bu">max</span>(<span class="dv">1</span>,((((((<span class="dv">2</span> <span class="op">*</span> level) <span class="op">//</span> <span class="dv">5</span>) <span class="op">+</span> <span class="dv">2</span>) <span class="op">*</span> power <span class="op">*</span> attack) <span class="op">//</span> defense) <span class="op">//</span> <span class="dv">50</span>)) <span class="op">+</span> <span class="dv">2</span>) <span class="op">*</span> mult <span class="op">*</span> r))</span></code></pre></div>
+<p>and now the computations are matching with Pokemon Showdown it seems.</p>
+<p>This doesn’t effect the recoil calculations from before since the recoil never
+exceeds 1 damage because it rounds down. Confirmed in game by getting a high level
+pokemon to use struggle to knock out a pokemon with an HP stat that isn’t divisble
+by 4 and seeing which way it rounds. This will change the previous Poison Sting
+and Struggle damage though</p>
+<h3 id="back-to-it">Back to it</h3>
+<p>With the updated calculation what is the actual expected amount of damage Weedle
+will deal? The total is a smidge over 118 damage which is an honestly unexpected
+amount, but clearly shows why the first approximation was optomistic.</p>
+<p>This means Weezing has somewhere around 122-216 HP to spare for damaging itself
+across all 109 turns.</p>
+<p>So, what is confusion damage? It is a 40 base power move that uses the confused
+Pokemon’s attack and defense in the calculations and it can’t crit. In the spirit
+of the Soft Lock Picking series we want this to be the worst case scenario. That
+means low HP, low defense, and high attack. The expected value for damage in this
+case is 44 damage and using 122 spare HP that means Weezing can hit itself 3 times
+before knocking itself out.</p>
+<p>The updated disobedience considerations are:</p>
+<ul>
+<li><span class="math inline">\(\frac{3}{32}\)</span> uses explosion</li>
+<li><span class="math inline">\(\frac{29}{32}\frac{29}{32}\frac{45}{128}\)</span> goes to sleep</li>
+<li><span class="math inline">\(\frac{29}{32}\frac{29}{32}\frac{45}{128}\)</span> hits itself</li>
+<li><span class="math inline">\(\frac{29}{32}(\frac{3}{32} + \frac{29}{32}\frac{19}{64})\)</span> does nothing</li>
+</ul>
+<p>For the state of Weezing we now need to know how many hits it has taken. Alive
+needs to be distinguished between by using number of hits it has taken and so
+does Sleep. Dead is still Dead though, there is just a new transition to it.
+Since there are 3 hits that needs to be added to the Alive and 5 Sleep states
+that amounts to a total of 19 states which is too much to be writing out by hand
+in matrix form. Though the description is:</p>
+<pre><code>transition Dead Dead = 1
+transition (Alive, 2) Dead = E + H
+transition (Alive, _) Dead = E
+transition (Alive, x) (Alive, x+1) = H
+transition (Alive, x) (Sleep n, x) = S
+transition (Alive, x) (Alive, x) = A
+transition (Sleep 1, x) (Alive, x) = 1
+transition (Sleep n, x) (Sleep n-1, x) = 1
+transition _ _ = 0</code></pre>
+<p>Implementing this through a dictionary and then converting to a matrix isn’t too
+bad. A quickly thrown together implementation is:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>orig_states <span class="op">=</span> [<span class="st">'Alive'</span>] <span class="op">+</span> [(<span class="st">'Sleep'</span>, i) <span class="cf">for</span> i <span class="kw">in</span> [<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">5</span>]]</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>states <span class="op">=</span> [(s, h) <span class="cf">for</span> s <span class="kw">in</span> orig_states <span class="cf">for</span> h <span class="kw">in</span> [<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>]]<span class="op">+</span> [<span class="st">'Dead'</span>]</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>E <span class="op">=</span> <span class="dv">3</span><span class="op">/</span><span class="dv">32</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>S <span class="op">=</span> <span class="dv">1</span><span class="op">/</span><span class="dv">5</span><span class="op">*</span><span class="dv">29</span><span class="op">/</span><span class="dv">32</span><span class="op">*</span><span class="dv">29</span><span class="op">/</span><span class="dv">32</span><span class="op">*</span><span class="dv">45</span><span class="op">/</span><span class="dv">128</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>H <span class="op">=</span> <span class="dv">29</span><span class="op">/</span><span class="dv">32</span><span class="op">*</span><span class="dv">29</span><span class="op">/</span><span class="dv">32</span><span class="op">*</span><span class="dv">45</span><span class="op">/</span><span class="dv">128</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>A <span class="op">=</span> <span class="dv">29</span><span class="op">/</span><span class="dv">32</span><span class="op">*</span>(<span class="dv">3</span><span class="op">/</span><span class="dv">32</span> <span class="op">+</span> <span class="dv">29</span><span class="op">/</span><span class="dv">32</span><span class="op">*</span><span class="dv">19</span><span class="op">/</span><span class="dv">64</span>)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> transition_dict():</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> {}</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># initialize and simple cases</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    d[<span class="st">'Dead'</span>] <span class="op">=</span> {}</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> hits <span class="kw">in</span> [<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">2</span>]:</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>        d[(<span class="st">'Alive'</span>, hits)] <span class="op">=</span> {}</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>        d[(<span class="st">'Alive'</span>, hits)][<span class="st">'Dead'</span>] <span class="op">=</span> E</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>        d[(<span class="st">'Alive'</span>, hits)][(<span class="st">'Alive'</span>, hits)] <span class="op">=</span> A</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> sleep_turns <span class="kw">in</span> [<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">5</span>]:</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>            d[((<span class="st">'Sleep'</span>, sleep_turns), hits)] <span class="op">=</span> {}</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>            d[(<span class="st">'Alive'</span>, hits)][((<span class="st">'Sleep'</span>, sleep_turns), hits)] <span class="op">=</span> S</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># hit transitions</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> hits <span class="kw">in</span> [<span class="dv">0</span>, <span class="dv">1</span>]:</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>        d[(<span class="st">'Alive'</span>, hits)][(<span class="st">'Alive'</span>, hits <span class="op">+</span> <span class="dv">1</span>)] <span class="op">=</span> H</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># sleep transitions</span></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> hits <span class="kw">in</span> [<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>]:</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> sleep_turns <span class="kw">in</span> [<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">5</span>]:</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>            d[((<span class="st">'Sleep'</span>, sleep_turns), hits)][((<span class="st">'Sleep'</span>, sleep_turns <span class="op">-</span> <span class="dv">1</span>), hits)] <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>    <span class="co"># special cases</span></span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>    d[<span class="st">'Dead'</span>][<span class="st">'Dead'</span>] <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>    d[(<span class="st">'Alive'</span>, <span class="dv">2</span>)][<span class="st">'Dead'</span>] <span class="op">=</span> E <span class="op">+</span> H</span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> hits <span class="kw">in</span> [<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>]:</span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>        d[((<span class="st">'Sleep'</span>, <span class="dv">1</span>), hits)][(<span class="st">'Alive'</span>, hits)] <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> d</span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> create_matrix():</span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>    arr <span class="op">=</span> [[<span class="dv">0</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(states))] <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(states))]</span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> transition_dict()</span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (i, state1) <span class="kw">in</span> <span class="bu">enumerate</span>(states):</span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> (j, state2) <span class="kw">in</span> <span class="bu">enumerate</span>(states):</span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> state1 <span class="kw">in</span> d <span class="kw">and</span> state2 <span class="kw">in</span> d[state1]:</span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>                arr[i][j] <span class="op">=</span> d[state1][state2]</span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a>            <span class="cf">else</span>:</span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a>                arr[i][j] <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(arr)</span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.matrix(arr)</span></code></pre></div>
+<p>The resulting probability of losing is:</p>
+<pre><code>&gt;&gt;&gt; a * T**109 * d.T
+matrix([[0.99999973]])</code></pre>
+<h2 id="results">Results</h2>
+<p>So, in the worst case scenario where the Weedle has the max HP and the Weezing
+has the max attack, minimum defense, and miminum HP roughly 3 in 10,000,000
+battles you will win.</p>
+<p>With the actual HP Weedle has in game the odds increase ever so slightly to</p>
+<pre><code>&gt;&gt;&gt; a * T**101 * d.T
+matrix([[0.999999]])</code></pre>
+<p>which is a 1 in 1,000,000 chance to win.</p>
+<h2 id="extensions">Extensions</h2>
+<p>There are some clear ways to make this situation worse in uninteresting ways
+like giving Weezing Selfdestruct or picking a pokemon that does more damage with
+confusion hits and takes more damage from Weedle. The more interesting things
+though are:</p>
+<ul>
+<li>finding an optimal level, the obedience and damage potentially form an
+interesting non-linear relationship making for a worse situation</li>
+<li>being more general with the results, I eventually picked a specific pokemon
+to analyze to avoid just enumerating a bunch of calculations. My guess is there
+is someway of being more sophisticated in the analysis so that you can consider
+a more general case and not just have to do a bunch of enumeration.</li>
+</ul>
+<p>I’m not going to be working on that now though.</p>
+</div>
+
+        </div>
+      </div>
+      <div id="footer">
+        <div id="footer-text">
+          Site proudly generated by <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </div>
+      </div>
+    </body>
+</html>
