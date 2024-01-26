@@ -9,6 +9,7 @@ import           Data.Ord (comparing)
 import           Data.List (sortBy, sort)
 import           Data.Char (toUpper)
 import           System.FilePath
+import GHC.Base (build)
 
 
 --------------------------------------------------------------------------------
@@ -30,6 +31,10 @@ main = hakyllWith deployConfig $ do
         compile $ pandocCompiler
             >>= loadAndApplyTemplate "templates/default.html" defaultContext
             >>= relativizeUrls
+
+    match "interactive/**" $ do
+        route idRoute
+        compile copyFileCompiler
 
     match "posts/*" $ do
         route $ setExtension "html"
@@ -74,6 +79,15 @@ main = hakyllWith deployConfig $ do
               >>= templateHierarchyFold ctxs
               >>= loadAndApplyTemplate "templates/default.html" ctx
               >>= relativizeUrls
+    
+    -- could make this smarter so that it can detect the pages and fill in 
+    -- a template automatically with the urls, but for now this is fine 
+    create ["interactive.html"] $ do
+        route idRoute
+        compile $ do
+            let ctx = constField "title" "Interactive" `mappend` defaultContext
+            makeItem ""
+                >>= loadAndApplyTemplate "templates/interactive.html" ctx
 
     create ["archive.html"] $ do
         route idRoute
