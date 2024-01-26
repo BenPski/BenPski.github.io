@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>BenPski - Number Wall</title>
+        <style>
+            .flex-container {
+                display: flex;
+            }
+            .flex-container > div {
+                padding: 1em;
+            }
+        </style>
+        <link rel="stylesheet" type="text/css" href="/css/default.css" />
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+    </head>
+    <body>
+      <div id="navigation">
+        <div id="navigation-internal">
+        <h1>Stuff</h1>
+        <a href="/">Home</a>
+        <a href="/notes.html">Notes</a>
+        <a href="/projects.html">Projects</a>
+        <a href="/interactive.html">Interactive</a>
+        <h1>Links</h1>
+        <a href="https://github.com/BenPski">GitHub</a>
+        </div>
+      </div>
+      <div id="content">
+        <div id="content-container">
+            <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
+                Warning: Rendering a large portion of the wall will consume a lot of memory, be careful with zooming.
+            <div class="flex-container">
+                <div>
+                    <canvas id="canvas"></canvas>
+                </div>
+                <div>
+                    <label for="sequence">Choose a sequence: </label>
+                    <select name="sequence" id="sequence"></select>
+                    <br>
+                    Color Scheme: 
+                    <br>
+                    <button id="add_color">+</button><button id="remove_color">-</button>
+                    <table id="colorpicker">
+                    </table>
+                </div>
+            </div>
+            <div class="flex-container">
+                <div>
+                    <h2>Number Walls</h2>
+                    
+                    <p><a href="https://cs.uwaterloo.ca/journals/JIS/VOL4/LUNNON/numbwall10.pdf">Number walls</a> are an interesting mathematical concept to play with and are
+                    useful for the study of linear recurrences and probably other things that I'm not mathematically sophisticated enough to understand. The other thing
+                    they are good for is pretty pictures.</p>
+
+                    <p>This here is a pretty simple implementation of a program that computes a number wall, the actual implementation can be found <a href="https://github.com/BenPski/number_wall">here</a>. You can drag around the image and zoom-in/out view more of the wall. You can also choose how to color the tiles (implicitly choosing the modulus of the display aka if there are 3 colors the values are computes modulo 3).</p>
+
+                    <p>There are some pretty interesting implementation details that are required to make this work and some things that could definitely be made more optimal.</p>
+
+                    <h3>Implementation</h3>
+                    <p>One of the first considerations is that the number wall is infinitely sized, so that has some very specific restrictions on the implementation because there is no actual way to hold an infinite amount of data in memory. Either we choose to pretend it isn't infinite and say the user requests the the size of the wall pre-emptively and that is what is computed or we say it is infinite, but only compute the part that is needed/requested. Here I went with the latter because it is both nicer and more interesting, in some sense both implementations actually would have looked very similar.</p>
+
+                    <h4>Memoization</h4>
+                    <p>So, how to implement the interface for the wall that can be used for this lazy loading? Well the fundamental operation will be `get`, so that the viewer of the wall can get whatever the value is at a particular coordinate in the wall when it needs it, then it is upto the interface to do the computation. The actual equations for computing the value at any given point is detailed in the linked paper. If we implement the equations we could compute the values on demand and call it a day, but there is a pretty glaring issue everytime a value is computed it has to recurse to at least all the cells in a triangle above the cell which will get expensive quickly (also a lot of redundant computations). Easy solution is remember previous solutions and reference them if possible, aka memoization. For a grid like structure seems like it would be best to do that is with an array-ish data structure, but due to the negative coordinates and possibly jagged arrays that arise just using a simple key-value map is easiest until there is a good reason to stop.</p>
+
+                    <h4>Windows</h4>
+                    <p>In a number wall there are things called windows, which are the regions that are all 0. These always appear in squares and are a very significant thing to work around to make the computations efficient. A minor thing at first to implement is efficiently checking if a cell is inside a window or not. The simplest way is to look all the way to the left and all the way to the right of the window to establish the size and see if the cell is in the window, but you can often terminate earlier or run into a situation where there is no edge so the computation never ends. The idea is from the cell move the top edge of the window to establish a baseline distance (since the top edge is always guaranteed to exist) then move to the left and right, if the distance covered ever exceeds the established distance then the cell is definitely inside the window. This works because you can view it is as a proof by contradiction where you assume the cell is outside the window and then found that the window is too wide for that to be true. This is very important for handling the case where there are windows of infinite size because the computation needs to terminate somehow.</p>
+
+                    <h4>Dealing with division</h4>
+                    <p>The next thing that quickly shows up that is pretty subtle if you aren't used to it is dividing numbers. One important thing about Number Walls is that every item is an interger if the generating sequence is comprised of integers (which seems to be a normal restriction from my pretty limited reading). The problem quickly arises that everything is an integer, but there are division operations in the equations so we will run into problems since integers divided by integers don't always equal integers. So, what do we do?</p>
+
+                    <p>First thing is just barrel forward and hope things work out. The code crashes. Well, that's what hope gets you.</p>
+
+                    <p>Next you might try floating point numbers and rounding to clean up the slight deviations as an analog for integers. A reasonable-ish idea since they are like rational numbers so division always works right, right? The result is better, all the equations are giving the results you want until you zoom out and nothing makes sense. This is where numerical instability shows up because the numbers always get really large (these are fundamentally determinants of bigger and bigger matrices full of integers). Numerical instability is small deviations in the denominator can significantly change the result. What happens is things eventually start drifting far enough away from integer values so rounding doesn't bring it back to an integer, goes like round(N.6) = M -> round(N.5) = M -> round(N.4) = M-1 and now the computations are off by 1 and that compounds.</p>
+
+                    <p>Well can we go back to integers and use something like modulo operators to keep everything bounded and an integer since in the end modulo a number is how it will be used? Nope, this will lead to unexpected division by 0's and there is sort of an argument to be made for modular arithmetic isn't unique for division and therefore not well defined. Also, it is sort of limiting to pre-emptively limit the output before being consumed.</p>
+
+                    <p>Seems like we need to use infinitely sized rational numbers. That is almost right. BigInts are necessary to be used for dealing with infinite precision (really the next thing could possibly have gotten rid of some numerical instability, though I didn't check), but infinite rationals aren't necessary. At this point we have come to the conclusion we probably see we need infinite precision to deal with the big numbers and the numerical instability, but overcoming truncation is a problem. Though this all seems so wasteful since it comes out to integers in the end so it is worth trying to figure something out. Looking at the equations you can probably notice something, there are multiple divisions in one equation and why might this be a problem? Here is an example: 1/2 + 1/2. With normal integer division this will become: 1/2 + 1/2 = 0 because 1/2 truncates to 0. What if we rewrite the equation using one division? 1/2 + 1/2 = (1*2 + 1*2)/(2*2) = (2 + 2)/4 = 1. Exactly what we would expect with regular division even with integer division. This is the key insight to getting BigInts to never inappropriately truncate, rewrite any equation with division to only have one division operation.</p>
+
+                    <p>To quote a quote in the linked paper: "In theory, there is no difference between theory and practice. In practice, it doesn't quite work that way." Snark aside, I am grateful for their work as this was a very interesting problem to work on and I never would have thought to do this or worked out the details myself.</p>
+
+
+                    <h3>Optimizations</h3>
+
+                    <p>One big thing that isn't well optimized is the memoization of the previously computed values. The simplest implementation is just a hash/dictionary from coordinates to values since that handles the negative coordinates and the jagged edges from being loaded in arbitrary order and the recursion scheme leading to triangular-is shapes in the grid. A hash in general is just inefficient for the type of access being done here. Something better would be like blocks of arrays for different regions so things could be kept more contiguous and array-like in access.</p>
+
+                    <p>There also isn't anything cleaning up the memoized data. It is likely advantageous to free some memory when it is sufficiently far off the view. Probably isn't worth freeing things that are close to the low m values as they are frequently used in recursion, but horizontally things should be able to be freed.</p>
+
+                    <p>There might be a better way of handling the window detection. Right now it has to check the width of the window number of cells to do computations about the window (unless it can very obviously exit early). Since windows are pretty simple as they are just squares there might be a way to efficiently store them so that the checks around a cell being inside a window or on the edge of the window could be made more efficient.</p>
+
+                    <p>I'm speculating, but I think there is probably a way to check if the "top" of the wall has been reached. Some sequences get to a point where they only generate 0's, so it is pointless to do more computations on that region. To check it is when the whole row is 0, but the row has infinite length so can't check that. Right now the computation gets more and more expensive as you get deeper into this region because every point has to seach a little bit farther to prove it is inside a region of only 0's.</p>
+
+                    <p>I believe the check for if a cell is inside a window is possibly doing twice the number of checks it needs to because it is growing in one direction at a time rather than both at the same time, which could be made more efficient.</p>
+
+                    <p>For rendering I'm very unlikely to bother with it, but there are some more efficient ways of doing it.</p>
+
+                    <h3>Interface Improvements</h3>
+
+                    <p>Main thing that could be better would be specifiying more sequences or user defined sequences, but it isn't too obvious how to do that simply and safely.</p>
+                </div>
+            </div>
+            <script src="./bootstrap.js"></script>
+        </div>
+      </div>
+      <div id="footer">
+        <div id="footer-text">
+          Site proudly generated by <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </div>
+      </div>
+    </body>
+</html>
